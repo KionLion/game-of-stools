@@ -3,11 +3,7 @@
 void init() {
     World world = createWorld();
     initBoard(world.board);
-
     showAsciiBoard(world.board);
-
-    //showAgentList(world.red);
-    //showAgentList(world.blue);
 }
 
 void initBoard(Cell board[ROWS][COLS]) {
@@ -116,13 +112,7 @@ void showAsciiBoard(Cell board[ROWS][COLS]) {
 void showAsciiCell(Cell cell) {
     char string[] = "     ";
     if (cell.clan != FREE) {
-        string[0] = cell.clan;
-        if (cell.castle != NULL && cell.castle->type == CASTLE) {
-            string[1] = cell.castle->type;
-        }
-        string[2] = 'x';
-        string[3] = 'x';
-        string[4] = 'x';
+        //TODO: Mohamed
     }
     printf("|%s", string);
 }

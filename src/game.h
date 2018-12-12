@@ -74,11 +74,17 @@ void initBoard(Cell board[ROWS][COLS]);
 void initAgent(Agent *agent, char clan, char type, Vector2 pos);
 AList createClan(char clan, int x, int y);
 AList createCastle(char clan, Vector2 pos);
-//AList createAgentList(char clan, Vector2 pos);
-//Agent *createAgent(char clan, char type, Vector2 pos);
 void addAgent(AList aList, char clan, char type, Vector2 pos);
 void showAgentList(AList aList);
 void showAsciiBoard(Cell board[ROWS][COLS]);
 void showAsciiCell(Cell cell);
+
+//TODO: Axel - Init Cell inhabitant (game files)
+//TODO: Axel - Production (game files)
+//TODO: Axel - Move (game files)
+
+//TODO: Mohamed : Choice menu (menu files)
+//TODO: Mohamed : ShowAsciiBoard + ShowAsciiCell (menu files)
+//TODO: Mohamed : Turn managment + random (game files)
 
 #endif //MAIN_GAME_H
