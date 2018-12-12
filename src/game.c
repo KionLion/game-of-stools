@@ -2,6 +2,36 @@
 
 void init() {
     World world = createWorld();
+    initBoard(world.board);
+
+    showAsciiBoard(world.board);
+
+    //showAgentList(world.red);
+    //showAgentList(world.blue);
+}
+
+void initBoard(Cell board[ROWS][COLS]) {
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            board[i][j].clan = FREE;
+            board[i][j].castle = NULL;
+            board[i][j].inhabitants = NULL;
+        }
+    }
+}
+
+void initAgent(Agent *agent, char clan, char type, Vector2 pos) {
+    Vector2 dest = {-1, -1};
+    agent->clan = clan;
+    agent->type = type;
+    agent->product = '\0';
+    agent->time = -1;
+    agent->pos = pos;
+    agent->dest = dest;
+    agent->nextAgent = NULL;
+    agent->prevAgent = NULL;
+    agent->nextNeighbor = NULL;
+    agent->prevNeighbor = NULL;
 }
 
 World createWorld() {
@@ -9,55 +39,90 @@ World createWorld() {
     world.turn = 0;
     world.redTreasure = INIT_TEASURE;
     world.blueTreasure = INIT_TEASURE;
-
-    Vector2 redPos = {0, 0};
-    AList redList = createAgentList(RED, redPos);
-
-    addAgent(redList, createAgent(RED, CASTLE, redPos));
-    addAgent(redList, createAgent(RED, BARON, redPos));
-    addAgent(redList, createAgent(RED, VILLAGER, redPos));
-
-    world.red = redList;
-
+    world.red = createClan(RED, 0, 0);
+    world.blue = createClan(BLUE, COLS - 1, ROWS - 1);
     return world;
 }
 
-Agent *createAgent(char clan, char type, Vector2 pos) {
-    Agent *agent = malloc(sizeof(*agent));
-    if (agent == NULL)
-        exit(EXIT_FAILURE);
-    agent->clan = clan;
-    agent->type = type;
-    agent->pos = pos;
-    agent->nextAgent = NULL;
-    return agent;
-}
-
-AList createAgentList(char clan, Vector2 pos) {
-    AList aList = malloc(sizeof(aList));
-    if (aList == NULL)
-        exit(EXIT_FAILURE);
-    aList->clan = clan;
-    aList->pos = pos;
-    aList->nextAgent = NULL;
+AList createClan(char clan, int x, int y) {
+    Vector2 pos = {x, y};
+    AList aList = createCastle(clan, pos);
+    addAgent(aList, clan, BARON, pos);
+    addAgent(aList, clan, VILLAGER, pos);
     return aList;
 }
 
-void addAgent(AList aList, Agent *agent) {
-    if (aList == NULL || agent == NULL)
+AList createCastle(char clan, Vector2 pos) {
+    AList aList = malloc(sizeof(AList));
+    if (aList == NULL)
         exit(EXIT_FAILURE);
-    Agent *lastAgent = getAgentListTail(aList);
-    lastAgent->nextAgent = agent;
+
+    Agent *castle = malloc(sizeof(Agent));
+    if (castle == NULL)
+        exit(EXIT_FAILURE);
+
+    initAgent(aList, clan, FREE, pos);
+    initAgent(castle, clan, CASTLE, pos);
+
+    aList->nextAgent = castle;
+    return aList;
 }
 
-Agent *getAgentListTail(AList aList) {
+void addAgent(AList aList, char clan, char type, Vector2 pos) {
+    Agent *agent = malloc(sizeof(Agent));
+    if (aList == NULL || agent == NULL)
+        exit(EXIT_FAILURE);
+
+    initAgent(agent, clan, type, pos);
+
+    if (aList->nextAgent == NULL) {
+        aList->nextAgent = agent;
+    } else {
+        Agent *tail = aList->nextAgent;
+        while(tail->nextAgent != NULL) {
+            tail = tail->nextAgent;
+        }
+        tail->nextAgent = agent;
+    }
+}
+
+void showAgentList(AList aList) {
     if (aList == NULL)
         exit(EXIT_FAILURE);
     Agent *agent = aList->nextAgent;
-    if (agent == NULL)
-        return aList;
-    while(agent->nextAgent != NULL) {
+    while(agent != NULL) {
+        printf("{%c-%c(%d,%d)}\n", agent->clan, agent->type, agent->pos.x, agent->pos.y);
         agent = agent->nextAgent;
     }
-    return agent;
+}
+
+void showAsciiBoard(Cell board[ROWS][COLS]) {
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            printf("------");
+        }
+        printf("-\n");
+        for (int j = 0; j < COLS; j++) {
+            showAsciiCell(board[i][j]);
+        }
+        printf("|\n");
+    }
+    for (int j = 0; j < COLS; j++) {
+        printf("------");
+    }
+    printf("-\n");
+}
+
+void showAsciiCell(Cell cell) {
+    char string[] = "     ";
+    if (cell.clan != FREE) {
+        string[0] = cell.clan;
+        if (cell.castle != NULL && cell.castle->type == CASTLE) {
+            string[1] = cell.castle->type;
+        }
+        string[2] = 'x';
+        string[3] = 'x';
+        string[4] = 'x';
+    }
+    printf("|%s", string);
 }

@@ -14,7 +14,7 @@
 
 #define RED 'R'
 #define BLUE 'B'
-#define FREE '-'
+#define FREE '\0'
 
 #define VILLAGER 'm'
 #define BARON 'b'
@@ -70,10 +70,15 @@ typedef struct {
 
 void init();
 World createWorld();
-Agent *createAgent(char clan, char type, Vector2 pos);
-AList createAgentList(char clan, Vector2 pos);
-Agent *getAgentListTail(AList aList);
-void addAgent(AList aList, Agent *agent);
+void initBoard(Cell board[ROWS][COLS]);
+void initAgent(Agent *agent, char clan, char type, Vector2 pos);
+AList createClan(char clan, int x, int y);
+AList createCastle(char clan, Vector2 pos);
+//AList createAgentList(char clan, Vector2 pos);
+//Agent *createAgent(char clan, char type, Vector2 pos);
+void addAgent(AList aList, char clan, char type, Vector2 pos);
 void showAgentList(AList aList);
+void showAsciiBoard(Cell board[ROWS][COLS]);
+void showAsciiCell(Cell cell);
 
 #endif //MAIN_GAME_H
