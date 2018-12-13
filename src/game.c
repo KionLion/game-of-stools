@@ -3,6 +3,9 @@
 void init() {
     World world = createWorld();
     initBoard(world.board);
+    initAgentList(world.red, world.board);
+    initAgentList(world.blue, world.board);
+
     showAsciiBoard(world.board);
 }
 
@@ -16,11 +19,23 @@ void initBoard(Cell board[ROWS][COLS]) {
     }
 }
 
+void initAgentList(AList aList, Cell board[ROWS][COLS]) {
+    Agent *agent = aList->nextAgent;
+    while(agent != NULL && agent->nextAgent != NULL) {
+        //TODO: update board
+        board[agent->pos.y][agent->pos.x].clan = agent->clan;
+        if (agent->type == CASTLE) {
+            board[agent->pos.y][agent->pos.x].castle = agent;
+        }
+        agent = agent->nextAgent;
+    }
+}
+
 void initAgent(Agent *agent, char clan, char type, Vector2 pos) {
     Vector2 dest = {-1, -1};
     agent->clan = clan;
     agent->type = type;
-    agent->product = '\0';
+    agent->product = FREE;
     agent->time = -1;
     agent->pos = pos;
     agent->dest = dest;
@@ -82,6 +97,8 @@ void addAgent(AList aList, char clan, char type, Vector2 pos) {
     }
 }
 
+/* ----- UI -----*/
+
 void showAgentList(AList aList) {
     if (aList == NULL)
         exit(EXIT_FAILURE);
@@ -112,7 +129,15 @@ void showAsciiBoard(Cell board[ROWS][COLS]) {
 void showAsciiCell(Cell cell) {
     char string[] = "     ";
     if (cell.clan != FREE) {
-        //TODO: Mohamed
+        string[0] = cell.clan;
+        if (cell.castle != NULL){
+            string[1] = CASTLE;
+        }
+        // TODO: Mohamed (count agent type)
+        string[2] = '.';
+        string[3] = '.';
+        string[4] = '.';
     }
     printf("|%s", string);
 }
+

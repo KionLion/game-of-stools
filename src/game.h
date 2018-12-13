@@ -6,6 +6,7 @@
 //#include <MLV/MLV_all.h>
 #include <stdio.h>
 #include <stdlib.h>
+//#include "ui.h"
 
 /* CONSTANTS */
 
@@ -16,10 +17,10 @@
 #define BLUE 'B'
 #define FREE '\0'
 
-#define VILLAGER 'm'
-#define BARON 'b'
-#define WARRIOR 'g'
-#define CASTLE 'c'
+#define VILLAGER 'M'
+#define BARON 'B'
+#define WARRIOR 'G'
+#define CASTLE 'C'
 
 #define TIME_VILLAGER 2
 #define TIME_WARRIOR 4
@@ -71,10 +72,12 @@ typedef struct {
 void init();
 World createWorld();
 void initBoard(Cell board[ROWS][COLS]);
+void initAgentList(AList aList, Cell board[ROWS][COLS]);
 void initAgent(Agent *agent, char clan, char type, Vector2 pos);
 AList createClan(char clan, int x, int y);
 AList createCastle(char clan, Vector2 pos);
 void addAgent(AList aList, char clan, char type, Vector2 pos);
+
 void showAgentList(AList aList);
 void showAsciiBoard(Cell board[ROWS][COLS]);
 void showAsciiCell(Cell cell);
@@ -83,8 +86,6 @@ void showAsciiCell(Cell cell);
 //TODO: Axel - Production (game files)
 //TODO: Axel - Move (game files)
 
-//TODO: Mohamed : Choice menu (menu files)
-//TODO: Mohamed : ShowAsciiBoard + ShowAsciiCell (menu files)
 //TODO: Mohamed : Turn managment + random (game files)
 
 #endif //MAIN_GAME_H
