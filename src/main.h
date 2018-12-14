@@ -3,12 +3,12 @@
 
 /* LIBRARY */
 
-//#include <MLV/MLV_all.h>
 #include <stdio.h>
 //#include <stdlib.h>
 //#include <string.h>
 //#include <math.h>
 #include "game.h"
+#include "ui.h"
 
 /* CONSTANTS */
 
@@ -22,5 +22,6 @@ typedef int bool;
 
 /* API */
 
+void play();
 
 #endif //GAME_OF_STOOLS_MAIN_H

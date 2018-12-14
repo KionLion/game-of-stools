@@ -1,12 +1,10 @@
-#ifndef MAIN_GAME_H
-#define MAIN_GAME_H
+#ifndef GAME_OF_STOOLS_GAME_H
+#define GAME_OF_STOOLS_GAME_H
 
 /* LIBRARY */
 
-//#include <MLV/MLV_all.h>
 #include <stdio.h>
 #include <stdlib.h>
-//#include "ui.h"
 
 /* CONSTANTS */
 
@@ -69,18 +67,15 @@ typedef struct {
 
 /* API */
 
-void init();
 World createWorld();
-void initBoard(Cell board[ROWS][COLS]);
-void initAgentList(AList aList, Cell board[ROWS][COLS]);
-void initAgent(Agent *agent, char clan, char type, Vector2 pos);
 AList createClan(char clan, int x, int y);
 AList createCastle(char clan, Vector2 pos);
 void addAgent(AList aList, char clan, char type, Vector2 pos);
-
-void showAgentList(AList aList);
-void showAsciiBoard(Cell board[ROWS][COLS]);
-void showAsciiCell(Cell cell);
+void initAgent(Agent *agent, char clan, char type, Vector2 pos);
+void initBoard(Cell board[ROWS][COLS]);
+void setAgentListOnBoard(AList aList, Cell board[ROWS][COLS]);
+void setAgentOnBoard(Agent *agent, Cell board[ROWS][COLS]);
+int countAgentInList(AList aList, char type);
 
 //TODO: Axel - Init Cell inhabitant (game files)
 //TODO: Axel - Production (game files)
@@ -88,4 +83,4 @@ void showAsciiCell(Cell cell);
 
 //TODO: Mohamed : Turn managment + random (game files)
 
-#endif //MAIN_GAME_H
+#endif //GAME_OF_STOOLS_GAME_H

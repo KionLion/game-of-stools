@@ -1,52 +1,8 @@
 #include "game.h"
 
-void init() {
-    World world = createWorld();
-    initBoard(world.board);
-    initAgentList(world.red, world.board);
-    initAgentList(world.blue, world.board);
-
-    showAsciiBoard(world.board);
-}
-
-void initBoard(Cell board[ROWS][COLS]) {
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            board[i][j].clan = FREE;
-            board[i][j].castle = NULL;
-            board[i][j].inhabitants = NULL;
-        }
-    }
-}
-
-void initAgentList(AList aList, Cell board[ROWS][COLS]) {
-    Agent *agent = aList->nextAgent;
-    while(agent != NULL && agent->nextAgent != NULL) {
-        //TODO: update board
-        board[agent->pos.y][agent->pos.x].clan = agent->clan;
-        if (agent->type == CASTLE) {
-            board[agent->pos.y][agent->pos.x].castle = agent;
-        }
-        agent = agent->nextAgent;
-    }
-}
-
-void initAgent(Agent *agent, char clan, char type, Vector2 pos) {
-    Vector2 dest = {-1, -1};
-    agent->clan = clan;
-    agent->type = type;
-    agent->product = FREE;
-    agent->time = -1;
-    agent->pos = pos;
-    agent->dest = dest;
-    agent->nextAgent = NULL;
-    agent->prevAgent = NULL;
-    agent->nextNeighbor = NULL;
-    agent->prevNeighbor = NULL;
-}
-
 World createWorld() {
     World world;
+    initBoard(world.board);
     world.turn = 0;
     world.redTreasure = INIT_TEASURE;
     world.blueTreasure = INIT_TEASURE;
@@ -97,47 +53,50 @@ void addAgent(AList aList, char clan, char type, Vector2 pos) {
     }
 }
 
-/* ----- UI -----*/
+void initAgent(Agent *agent, char clan, char type, Vector2 pos) {
+    Vector2 dest = {-1, -1};
+    agent->clan = clan;
+    agent->type = type;
+    agent->product = FREE;
+    agent->time = -1;
+    agent->pos = pos;
+    agent->dest = dest;
+    agent->nextAgent = NULL;
+    agent->prevAgent = NULL;
+    agent->nextNeighbor = NULL;
+    agent->prevNeighbor = NULL;
+}
 
-void showAgentList(AList aList) {
-    if (aList == NULL)
-        exit(EXIT_FAILURE);
+void initBoard(Cell board[ROWS][COLS]) {
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            board[i][j].clan = FREE;
+            board[i][j].castle = NULL;
+            board[i][j].inhabitants = NULL;
+        }
+    }
+}
+
+void setAgentListOnBoard(AList aList, Cell board[ROWS][COLS]) {
     Agent *agent = aList->nextAgent;
-    while(agent != NULL) {
-        printf("{%c-%c(%d,%d)}\n", agent->clan, agent->type, agent->pos.x, agent->pos.y);
+    while(agent != NULL && agent->nextAgent != NULL) {
+        setAgentOnBoard(agent, board);
         agent = agent->nextAgent;
     }
 }
 
-void showAsciiBoard(Cell board[ROWS][COLS]) {
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            printf("------");
-        }
-        printf("-\n");
-        for (int j = 0; j < COLS; j++) {
-            showAsciiCell(board[i][j]);
-        }
-        printf("|\n");
+void setAgentOnBoard(Agent *agent, Cell board[ROWS][COLS]) {
+    int row = agent->pos.y;
+    int col = agent->pos.x;
+    board[row][col].clan = agent->clan;
+    if (agent->type == CASTLE) {
+        board[row][col].castle = agent;
+    } else {
+        board[row][col].inhabitants = agent;
     }
-    for (int j = 0; j < COLS; j++) {
-        printf("------");
-    }
-    printf("-\n");
 }
 
-void showAsciiCell(Cell cell) {
-    char string[] = "     ";
-    if (cell.clan != FREE) {
-        string[0] = cell.clan;
-        if (cell.castle != NULL){
-            string[1] = CASTLE;
-        }
-        // TODO: Mohamed (count agent type)
-        string[2] = '.';
-        string[3] = '.';
-        string[4] = '.';
-    }
-    printf("|%s", string);
+int countAgentInList(AList aList, char type) {
+    //TODO: Mohamed
 }
 

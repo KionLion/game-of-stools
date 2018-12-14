@@ -3,9 +3,14 @@
 int main(int argc, char *argv[]) {
     printf("==== Game of Stools ====\n");
 
-    init();
+    play();
 
     return 0;
+}
+
+void play() {
+    World world = createWorld();
+    showAsciiBoard(world.board);
 }
 
 void mlv() {
