@@ -8,6 +8,11 @@
 
 /* CONSTANTS */
 
+typedef int bool;
+
+#define TRUE 1
+#define FALSE 0
+
 #define COLS 18
 #define ROWS 12
 
@@ -29,8 +34,9 @@
 #define COST_BARON 10
 #define COST_CASTLE 30
 
+#define MAX_MOVE 1;
+
 #define INIT_TEASURE 50
-//#define INIT_AGENT_LIST "cbm"
 
 /* STRUCTURE */
 
@@ -54,7 +60,7 @@ typedef struct Agent {
 
 typedef struct {
     Agent *castle; /* s'il y a un chateau sur la case */
-    AList inhabitants; /* les autres occupants */
+    Agent *inhabitants; /* les autres occupants */
     char clan; /* RED ou BLUE */
 } Cell;
 
@@ -68,16 +74,19 @@ typedef struct {
 /* API */
 
 World createWorld();
-AList createClan(char clan, int x, int y);
-AList createCastle(char clan, Vector2 pos);
-void addAgent(AList aList, char clan, char type, Vector2 pos);
+AList createClan(Cell board[ROWS][COLS], char clan, Vector2 pos);
+AList createCastle(Cell board[ROWS][COLS], char clan, Vector2 pos);
+void addAgent(Cell board[ROWS][COLS], AList aList, char clan, char type, Vector2 pos);
+void setAgentOnBoard(Cell board[ROWS][COLS], Agent *agent);
 void initAgent(Agent *agent, char clan, char type, Vector2 pos);
 void initBoard(Cell board[ROWS][COLS]);
-void setAgentListOnBoard(AList aList, Cell board[ROWS][COLS]);
-void setAgentOnBoard(Agent *agent, Cell board[ROWS][COLS]);
+Vector2 getFreeNextPos(Cell board[ROWS][COLS], Vector2 pos);
+bool canMove(Cell board[ROWS][COLS], Vector2 pos, Vector2 dest);
+bool isFreeCell(Cell board[ROWS][COLS], Vector2 pos);
+bool isOnBoard(Vector2 pos);
+int getDistance(Vector2 pos, Vector2 dest);
 int countAgentInList(AList aList, char type);
 
-//TODO: Axel - Init Cell inhabitant (game files)
 //TODO: Axel - Production (game files)
 //TODO: Axel - Move (game files)
 

@@ -34,10 +34,9 @@ void showAsciiCell(Cell cell) {
         if (cell.castle != NULL){
             string[1] = CASTLE;
         }
-        // TODO: Mohamed (use "countAgentInList")
-        string[2] = '.';
-        string[3] = '.';
-        string[4] = '.';
+        string[2] = '0' + countAgentInList(cell.inhabitants, BARON);
+        string[3] = '0' + countAgentInList(cell.inhabitants, WARRIOR);
+        string[4] = '0' + countAgentInList(cell.inhabitants, VILLAGER);
     }
     printf("|%s", string);
 }

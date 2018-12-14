@@ -20,6 +20,5 @@ void showAsciiBoard(Cell board[ROWS][COLS]);
 void showAsciiCell(Cell cell);
 
 //TODO: Mohamed : Choice menu (menu files)
-//TODO: Mohamed : ShowAsciiBoard + ShowAsciiCell (menu files)
 
 #endif //GAME_OF_STOOLS_UI_H
