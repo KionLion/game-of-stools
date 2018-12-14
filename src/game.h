@@ -80,12 +80,25 @@ void addAgent(Cell board[ROWS][COLS], AList aList, char clan, char type, Vector2
 void setAgentOnBoard(Cell board[ROWS][COLS], Agent *agent);
 void initAgent(Agent *agent, char clan, char type, Vector2 pos);
 void initBoard(Cell board[ROWS][COLS]);
+void moveAgent(Cell board[ROWS][COLS], Agent *agent);
+bool hasDestination(Agent *agent);
 Vector2 getFreeNextPos(Cell board[ROWS][COLS], Vector2 pos);
 bool canMove(Cell board[ROWS][COLS], Vector2 pos, Vector2 dest);
 bool isFreeCell(Cell board[ROWS][COLS], Vector2 pos);
 bool isOnBoard(Vector2 pos);
 int getDistance(Vector2 pos, Vector2 dest);
 int countAgentInList(AList aList, char type);
+
+/* ----- ORDERS ----- */
+
+void wait(Cell cell, Agent *agent);
+void setDestination(Agent *agent);
+void claim(Cell cell, Agent *agent);
+void recolt(Cell cell, Agent *agent);
+void takeUpArms(Cell cell, Agent *agent);
+void buildCastle(Cell cell, AList aList, char clan);
+void product(Cell cell, AList aList, char clan, char type);
+void delete(Cell cell, AList aList, Agent *agent);
 
 //TODO: Axel - Production (game files)
 //TODO: Axel - Move (game files)

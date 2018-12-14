@@ -72,7 +72,7 @@ void initAgent(Agent *agent, char clan, char type, Vector2 pos) {
     agent->product = FREE;
     agent->time = -1;
     agent->pos = pos;
-    agent->dest = (Vector2){-1, -1};
+    agent->dest = pos;
     agent->nextAgent = NULL;
     agent->prevAgent = NULL;
     agent->nextNeighbor = NULL;
@@ -87,6 +87,20 @@ void initBoard(Cell board[ROWS][COLS]) {
             board[i][j].inhabitants = NULL;
         }
     }
+}
+
+void moveAgent(Cell board[ROWS][COLS], Agent *agent) {
+    if (agent->type != CASTLE && hasDestination(agent)) {
+
+    }
+    if (canMove(board, agent->pos, agent->dest)) {
+
+    }
+}
+
+bool hasDestination(Agent *agent) {
+    return agent->dest.x != agent->pos.x
+        || agent->dest.y != agent->pos.y;
 }
 
 Vector2 getFreeNextPos(Cell board[ROWS][COLS], Vector2 pos) {
@@ -124,3 +138,6 @@ int getDistance(Vector2 pos, Vector2 dest) {
 int countAgentInList(AList aList, char type) {
     return (aList != NULL && aList->type == type) ? 1 : 0;
 }
+
+/* ----- ORDERS ----- */
+
