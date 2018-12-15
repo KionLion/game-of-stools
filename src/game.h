@@ -5,13 +5,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "utils.h"
 
 /* CONSTANTS */
-
-typedef int bool;
-
-#define TRUE 1
-#define FALSE 0
 
 #define COLS 18
 #define ROWS 12
@@ -39,11 +35,6 @@ typedef int bool;
 #define INIT_TEASURE 50
 
 /* STRUCTURE */
-
-typedef struct {
-    int x;
-    int y;
-} Vector2;
 
 typedef struct Agent Agent;
 
@@ -85,6 +76,7 @@ AList createCastle(char clan, Vector2 pos);
 void addAgent(AList aList, char clan, char type);
 void setAgentOnBoard(Agent *agent);
 void moveAgent(Agent *agent);
+bool isCastle(Agent *agent);
 bool hasDestination(Agent *agent);
 Vector2 getFreeNextPos(Vector2 pos);
 bool canMove(Vector2 dest);
@@ -103,6 +95,9 @@ void takeUpArms(Cell cell, Agent *agent);
 void buildCastle(Cell cell, AList aList, char clan);
 void product(Cell cell, AList aList, char clan, char type);
 void delete(Cell cell, AList aList, Agent *agent);
+void endTurn();
+
+// Turn : start -> Prod castle -> move warrior/baron -> prod or move villager -> end
 
 //TODO: Axel - Production (game files)
 //TODO: Axel - Move (game files)

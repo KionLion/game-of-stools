@@ -84,12 +84,16 @@ void setAgentOnBoard(Agent *agent) {
 }
 
 void moveAgent(Agent *agent) {
-    /*if (agent->type != CASTLE && hasDestination(agent)) {
+    if (!isCastle(agent) && hasDestination(agent)) {
 
     }
-    if (canMove(g_world.board, agent->pos, agent->dest)) {
+    if (canMove(agent->dest)) {
 
-    }*/
+    }
+}
+
+bool isCastle(Agent *agent) {
+    return agent->type != CASTLE;
 }
 
 bool hasDestination(Agent *agent) {
@@ -123,10 +127,6 @@ bool isFreeCell(Vector2 pos) {
 
 bool isOnBoard(Vector2 pos) {
     return pos.x >= 0 && pos.x < COLS && pos.y >= 0 && pos.y < ROWS;
-}
-
-int getDistance(Vector2 pos, Vector2 dest) {
-    return abs(dest.x - pos.x + dest.y - pos.y);
 }
 
 int countAgentInList(AList aList, char type) {
