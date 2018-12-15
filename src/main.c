@@ -1,5 +1,7 @@
 #include "main.h"
 
+World g_world;
+
 int main(int argc, char *argv[]) {
     printf("==== Game of Stools ====\n");
 
@@ -9,8 +11,8 @@ int main(int argc, char *argv[]) {
 }
 
 void play() {
-    World world = createWorld();
-    showAsciiBoard(world.board);
+    initWorld();
+    showAsciiBoard();
 }
 
 void mlv() {

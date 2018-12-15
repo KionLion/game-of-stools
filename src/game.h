@@ -71,20 +71,24 @@ typedef struct {
     int redTreasure, blueTreasure;
 } World;
 
+/* GLOBAL VARIABLES */
+
+extern World g_world;
+
 /* API */
 
-World createWorld();
-AList createClan(Cell board[ROWS][COLS], char clan, Vector2 pos);
-AList createCastle(Cell board[ROWS][COLS], char clan, Vector2 pos);
-void addAgent(Cell board[ROWS][COLS], AList aList, char clan, char type, Vector2 pos);
-void setAgentOnBoard(Cell board[ROWS][COLS], Agent *agent);
+void initWorld();
+void initBoard();
 void initAgent(Agent *agent, char clan, char type, Vector2 pos);
-void initBoard(Cell board[ROWS][COLS]);
-void moveAgent(Cell board[ROWS][COLS], Agent *agent);
+AList createClan(char clan, Vector2 pos);
+AList createCastle(char clan, Vector2 pos);
+void addAgent(AList aList, char clan, char type);
+void setAgentOnBoard(Agent *agent);
+void moveAgent(Agent *agent);
 bool hasDestination(Agent *agent);
-Vector2 getFreeNextPos(Cell board[ROWS][COLS], Vector2 pos);
-bool canMove(Cell board[ROWS][COLS], Vector2 pos, Vector2 dest);
-bool isFreeCell(Cell board[ROWS][COLS], Vector2 pos);
+Vector2 getFreeNextPos(Vector2 pos);
+bool canMove(Vector2 dest);
+bool isFreeCell(Vector2 pos);
 bool isOnBoard(Vector2 pos);
 int getDistance(Vector2 pos, Vector2 dest);
 int countAgentInList(AList aList, char type);

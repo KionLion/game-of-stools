@@ -1,5 +1,7 @@
 #include "ui.h"
 
+World g_world;
+
 void showAgentList(AList aList) {
     if (aList == NULL)
         exit(EXIT_FAILURE);
@@ -10,14 +12,14 @@ void showAgentList(AList aList) {
     }
 }
 
-void showAsciiBoard(Cell board[ROWS][COLS]) {
+void showAsciiBoard() {
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
             printf("------");
         }
         printf("-\n");
         for (int j = 0; j < COLS; j++) {
-            showAsciiCell(board[i][j]);
+            showAsciiCell(g_world.board[i][j]);
         }
         printf("|\n");
     }

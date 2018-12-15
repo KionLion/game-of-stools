@@ -16,7 +16,7 @@
 /* API */
 
 void showAgentList(AList aList);
-void showAsciiBoard(Cell board[ROWS][COLS]);
+void showAsciiBoard();
 void showAsciiCell(Cell cell);
 
 //TODO: Mohamed : Choice menu (menu files)

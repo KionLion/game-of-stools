@@ -1,72 +1,26 @@
 #include "game.h"
 
-World createWorld() {
-    World world;
-    initBoard(world.board);
-    world.turn = 0;
-    world.redTreasure = INIT_TEASURE;
-    world.blueTreasure = INIT_TEASURE;
-    world.red = createClan(world.board, RED, (Vector2){0, 0});
-    world.blue = createClan(world.board, BLUE, (Vector2){COLS - 1, ROWS - 1});
-    return world;
+void initWorld() {
+    initBoard();
+    g_world.turn = 0;
+    g_world.redTreasure = INIT_TEASURE;
+    g_world.blueTreasure = INIT_TEASURE;
+    g_world.red = createClan(RED, (Vector2){0, 0});
+    g_world.blue = createClan(BLUE, (Vector2){COLS - 1, ROWS - 1});
 }
 
-AList createClan(Cell board[ROWS][COLS], char clan, Vector2 pos) {
-    AList aList = createCastle(board, clan, pos);
-    addAgent(board, aList, clan, BARON, pos);
-    addAgent(board, aList, clan, VILLAGER, pos);
-    return aList;
-}
-
-AList createCastle(Cell board[ROWS][COLS], char clan, Vector2 pos) {
-    AList aList = malloc(sizeof(AList));
-    if (aList == NULL)
-        exit(EXIT_FAILURE);
-
-    Agent *castle = malloc(sizeof(Agent));
-    if (castle == NULL)
-        exit(EXIT_FAILURE);
-
-    initAgent(aList, clan, FREE, pos);
-    initAgent(castle, clan, CASTLE, pos);
-    setAgentOnBoard(board, castle);
-
-    aList->nextAgent = castle;
-    return aList;
-}
-
-void addAgent(Cell board[ROWS][COLS], AList aList, char clan, char type, Vector2 pos) {
-    Agent *agent = malloc(sizeof(Agent));
-    if (aList == NULL || agent == NULL)
-        exit(EXIT_FAILURE);
-
-    pos = getFreeNextPos(board, pos);
-    initAgent(agent, clan, type, pos);
-    setAgentOnBoard(board, agent);
-
-    if (aList->nextAgent == NULL) {
-        aList->nextAgent = agent;
-    } else {
-        Agent *tail = aList->nextAgent;
-        while(tail->nextAgent != NULL) {
-            tail = tail->nextAgent;
+void initBoard() {
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            g_world.board[i][j].clan = FREE;
+            g_world.board[i][j].castle = NULL;
+            g_world.board[i][j].inhabitants = NULL;
         }
-        tail->nextAgent = agent;
-    }
-}
-
-void setAgentOnBoard(Cell board[ROWS][COLS], Agent *agent) {
-    int row = agent->pos.y;
-    int col = agent->pos.x;
-    board[row][col].clan = agent->clan;
-    if (agent->type == CASTLE) {
-        board[row][col].castle = agent;
-    } else {
-        board[row][col].inhabitants = agent;
     }
 }
 
 void initAgent(Agent *agent, char clan, char type, Vector2 pos) {
+    pos = getFreeNextPos(pos);
     agent->clan = clan;
     agent->type = type;
     agent->product = FREE;
@@ -79,52 +33,92 @@ void initAgent(Agent *agent, char clan, char type, Vector2 pos) {
     agent->prevNeighbor = NULL;
 }
 
-void initBoard(Cell board[ROWS][COLS]) {
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            board[i][j].clan = FREE;
-            board[i][j].castle = NULL;
-            board[i][j].inhabitants = NULL;
-        }
+AList createClan(char clan, Vector2 pos) {
+    AList aList = createCastle(clan, pos);
+    addAgent(aList, clan, BARON);
+    addAgent(aList, clan, VILLAGER);
+    return aList;
+}
+
+AList createCastle(char clan, Vector2 pos) {
+    AList aList = malloc(sizeof(AList));
+    if (aList == NULL)
+        exit(EXIT_FAILURE);
+
+    Agent *castle = malloc(sizeof(Agent));
+    if (castle == NULL)
+        exit(EXIT_FAILURE);
+
+    initAgent(aList, clan, FREE, pos);
+    initAgent(castle, clan, CASTLE, pos);
+    setAgentOnBoard(castle);
+
+    aList->nextAgent = castle;
+    return aList;
+}
+
+void addAgent(AList aList, char clan, char type) {
+    Agent *agent = malloc(sizeof(Agent));
+    if (aList == NULL || agent == NULL || aList->nextAgent == NULL)
+        exit(EXIT_FAILURE);
+
+    initAgent(agent, clan, type, aList->nextAgent->pos);
+    setAgentOnBoard(agent);
+
+    Agent *tail = aList->nextAgent;
+    while(tail->nextAgent != NULL) {
+        tail = tail->nextAgent;
+    }
+    tail->nextAgent = agent;
+}
+
+void setAgentOnBoard(Agent *agent) {
+    int row = agent->pos.y;
+    int col = agent->pos.x;
+    g_world.board[row][col].clan = agent->clan;
+    if (agent->type == CASTLE) {
+        g_world.board[row][col].castle = agent;
+    } else {
+        g_world.board[row][col].inhabitants = agent;
     }
 }
 
-void moveAgent(Cell board[ROWS][COLS], Agent *agent) {
-    if (agent->type != CASTLE && hasDestination(agent)) {
+void moveAgent(Agent *agent) {
+    /*if (agent->type != CASTLE && hasDestination(agent)) {
 
     }
-    if (canMove(board, agent->pos, agent->dest)) {
+    if (canMove(g_world.board, agent->pos, agent->dest)) {
 
-    }
+    }*/
 }
 
 bool hasDestination(Agent *agent) {
-    return agent->dest.x != agent->pos.x
-        || agent->dest.y != agent->pos.y;
+    return agent->dest.x != agent->pos.x || agent->dest.y != agent->pos.y;
 }
 
-Vector2 getFreeNextPos(Cell board[ROWS][COLS], Vector2 pos) {
+Vector2 getFreeNextPos(Vector2 pos) {
     Vector2 up = {pos.x, pos.y - 1};
     Vector2 right = {pos.x + 1, pos.y};
     Vector2 down = {pos.x, pos.y + 1};
     Vector2 left = {pos.x - 1, pos.y};
-    if (canMove(board, pos, up))
+    if (canMove(pos))
+        return pos;
+    if (canMove(up))
         return up;
-    if (canMove(board, pos, right))
+    if (canMove(right))
         return right;
-    if (canMove(board, pos, down))
+    if (canMove(down))
         return down;
-    if (canMove(board, pos, left))
+    if (canMove(left))
         return left;
 }
 
-bool canMove(Cell board[ROWS][COLS], Vector2 pos, Vector2 dest) {
-    return isOnBoard(dest) && isFreeCell(board, dest)
-        && getDistance(pos, dest) == MAX_MOVE;
+bool canMove(Vector2 dest) {
+    return isOnBoard(dest) && isFreeCell(dest);
 }
 
-bool isFreeCell(Cell board[ROWS][COLS], Vector2 pos) {
-    return board[pos.y][pos.x].inhabitants == NULL;
+bool isFreeCell(Vector2 pos) {
+    return g_world.board[pos.y][pos.x].inhabitants == NULL;
 }
 
 bool isOnBoard(Vector2 pos) {
