@@ -14,4 +14,43 @@ int get_distance(Vector2 pos, Vector2 dest) {
     return abs(dest.x - pos.x + dest.y - pos.y);
 }
 
+int get_sign(int x) {
+    return (x > 0) - (x < 0);
+}
+
+void set_user_entry(char *entry, int maxLength) {
+    fgets(entry, maxLength - 1, stdin);
+}
+
+char *get_user_entry(int maxLength) {
+    char *entry = malloc(sizeof(char) * maxLength);
+    set_user_entry(entry, maxLength);
+    return entry;
+}
+
+int get_user_entry_integer() {
+    int entry = 0;
+    char c;
+    do {
+        printf("[Enter integer]");
+    } while ((scanf("%d%c", &entry, &c) != 2 || c != '\n') && clean_stdin());
+    return entry;
+}
+
+int get_user_entry_interval(int min, int max) {
+    int entry = 0;
+    char c;
+    do {
+        printf("[Enter integer between %d to %d]", min, max);
+    } while (((scanf("%d%c", &entry, &c) != 2 || c != '\n')
+            && clean_stdin()) || entry < min || entry > max);
+    return entry;
+}
+
+bool clean_stdin() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF) {}
+    return TRUE;
+}
+
 
