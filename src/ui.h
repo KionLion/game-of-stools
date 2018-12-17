@@ -18,7 +18,13 @@
 void showAgentList(AList aList);
 void showAsciiBoard();
 void showAsciiCell(Cell cell);
-
-//TODO: Mohamed : Choice menu (menu files)
+void showAgent(Agent *agent);
+void showClanInfo(AList aList);
+void showCommandAgent(AList aList, char type);
+void showCommandCastle(Agent *agent);
+void showCommandBaron(Agent *agent);
+void showCommandWarrior(Agent *agent);
+void showCommandVillager(Agent *agent);
+int showCommandTurn();
 
 #endif //GAME_OF_STOOLS_UI_H

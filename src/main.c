@@ -3,16 +3,39 @@
 World g_world;
 
 int main(int argc, char *argv[]) {
-    printf("==== Game of Stools ====\n");
+    printf("==== GAME OF STOOLS ====\n");
 
     play();
+
+    printf("==== ENDGAME ====\n");
 
     return 0;
 }
 
 void play() {
     initWorld();
-    showAsciiBoard();
+    AList current = getRandomColor();
+    int cmd;
+    int count = 0;
+    do {
+        showAsciiBoard();
+
+        showClanInfo(current);
+
+        showCommandAgent(current, CASTLE);
+        showCommandAgent(current, BARON);
+        showCommandAgent(current, WARRIOR);
+        showCommandAgent(current, VILLAGER);
+
+        // Turn Option
+        cmd = showCommandTurn();
+
+        current = switchTurn(current);
+        updateTurn(++count);
+
+    } while (!isEndGame(cmd));
+
+    // Show Winner !
 }
 
 void mlv() {

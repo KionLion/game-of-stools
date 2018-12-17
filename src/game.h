@@ -34,6 +34,21 @@
 
 #define INIT_TEASURE 50
 
+#define CMD_VOID 0
+#define CMD_QUIT -1
+#define CMD_END_TURN 1
+#define CMD_SAVE 2
+#define CMD_LOAD 3
+#define CMD_AGENT_NEW_DEST 10
+#define CMD_AGENT_REMOVE 11
+#define CMD_CASTLE_BUILD_BARON 20
+#define CMD_CASTLE_BUILD_WARRIOR 21
+#define CMD_CASTLE_BUILD_VILLAGER 22
+#define CMD_BARON_BUILD_CASTLE 30
+#define CMD_WARRIOR_CLAIM 40
+#define CMD_VILLAGER_COLLECT 50
+#define CMD_VILLAGER_TAKE_UP_ARMS 51
+
 /* STRUCTURE */
 
 typedef struct Agent Agent;
@@ -82,10 +97,13 @@ Vector2 getFreeNextPos(Vector2 pos);
 bool canMove(Vector2 dest);
 bool isFreeCell(Vector2 pos);
 bool isOnBoard(Vector2 pos);
-int getDistance(Vector2 pos, Vector2 dest);
 int countAgentInList(AList aList, char type);
 
-/* ----- ORDERS ----- */
+AList getRandomColor();
+AList switchTurn(AList current);
+AList getWinnner();
+bool isEndGame(int cmd);
+void updateTurn(int count);
 
 void wait(Cell cell, Agent *agent);
 void setDestination(Agent *agent);
@@ -96,12 +114,9 @@ void buildCastle(Cell cell, AList aList, char clan);
 void product(Cell cell, AList aList, char clan, char type);
 void delete(Cell cell, AList aList, Agent *agent);
 void endTurn();
-
-// Turn : start -> Prod castle -> move warrior/baron -> prod or move villager -> end
+void endGame();
 
 //TODO: Axel - Production (game files)
 //TODO: Axel - Move (game files)
-
-//TODO: Mohamed : Turn managment + random (game files)
 
 #endif //GAME_OF_STOOLS_GAME_H

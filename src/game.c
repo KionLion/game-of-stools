@@ -2,7 +2,7 @@
 
 void initWorld() {
     initBoard();
-    g_world.turn = 0;
+    g_world.turn = 1;
     g_world.redTreasure = INIT_TEASURE;
     g_world.blueTreasure = INIT_TEASURE;
     g_world.red = createClan(RED, (Vector2){0, 0});
@@ -84,16 +84,25 @@ void setAgentOnBoard(Agent *agent) {
 }
 
 void moveAgent(Agent *agent) {
-    if (!isCastle(agent) && hasDestination(agent)) {
-
+    //TODO: Move
+    if (agent->type != CASTLE && hasDestination(agent) && canMove(agent->dest)) {
+        int deltaX = get_sign(agent->dest.x - agent->pos.x);
+        int deltaY = get_sign(agent->dest.y - agent->pos.y);
+//        g_world.board[agent->pos.y][agent->pos.x].inhabitants = NULL;
+        if (deltaX == 0) {
+            agent->pos.y += deltaY;
+        } else if (deltaY == 0) {
+            agent->pos.x += deltaX;
+        } else {
+            bool vector = get_random_boolean();
+            if (vector) {
+                agent->pos.x += deltaX;
+            } else {
+                agent->pos.y += deltaY;
+            }
+        }
+//        g_world.board[agent->pos.y][agent->pos.x].inhabitants = agent;
     }
-    if (canMove(agent->dest)) {
-
-    }
-}
-
-bool isCastle(Agent *agent) {
-    return agent->type != CASTLE;
 }
 
 bool hasDestination(Agent *agent) {
@@ -133,5 +142,30 @@ int countAgentInList(AList aList, char type) {
     return (aList != NULL && aList->type == type) ? 1 : 0;
 }
 
-/* ----- ORDERS ----- */
+AList  getRandomColor() {
+    return get_random_boolean() ? g_world.red : g_world.blue;
+}
 
+AList switchTurn(AList current) {
+    return (current == g_world.red) ? g_world.blue : g_world.red;
+}
+
+AList getWinnner() {
+    if (g_world.red->nextAgent == NULL) {
+        return g_world.blue;
+    }
+    if (g_world.blue->nextAgent == NULL) {
+        return g_world.red;
+    }
+    return NULL;
+}
+
+bool isEndGame(int cmd) {
+    return getWinnner() != NULL || cmd == CMD_QUIT;
+}
+
+void updateTurn(int count) {
+    if (count % 2 == 0) {
+        g_world.turn++;
+    }
+}
