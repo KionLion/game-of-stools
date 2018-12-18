@@ -3,7 +3,7 @@
 
 /* LIBRARY */
 
-//#include <MLV/MLV_all.h>
+#include <MLV/MLV_all.h>
 #include <stdio.h>
 #include "game.h"
 
@@ -26,5 +26,7 @@ void showCommandBaron(Agent *agent);
 void showCommandWarrior(Agent *agent);
 void showCommandVillager(Agent *agent);
 int showCommandTurn();
+
+// TODO: Mohamed : UI with MLV
 
 #endif //GAME_OF_STOOLS_UI_H
