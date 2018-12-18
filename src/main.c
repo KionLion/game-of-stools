@@ -3,6 +3,7 @@
 World g_world;
 
 int main(int argc, char *argv[]) {
+    setbuf(stdout, 0); // Fix CLion Jetbrains debug mode
     printf("==== GAME OF STOOLS ====\n");
 
     play();
@@ -18,6 +19,9 @@ void play() {
     int cmd;
     int count = 0;
     do {
+        updateTurn(count++);
+        updateBuild(current);
+
         showAsciiBoard();
 
         showClanInfo(current);
@@ -31,8 +35,6 @@ void play() {
         cmd = showCommandTurn();
 
         current = switchTurn(current);
-        updateTurn(++count);
-
     } while (!isEndGame(cmd));
 
     // Show Winner !

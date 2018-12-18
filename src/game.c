@@ -2,7 +2,7 @@
 
 void initWorld() {
     initBoard();
-    g_world.turn = 1;
+    g_world.turn = 0;
     g_world.redTreasure = INIT_TEASURE;
     g_world.blueTreasure = INIT_TEASURE;
     g_world.red = createClan(RED, (Vector2){0, 0});
@@ -62,7 +62,8 @@ void addAgent(AList aList, char clan, char type) {
     if (aList == NULL || agent == NULL || aList->nextAgent == NULL)
         exit(EXIT_FAILURE);
 
-    initAgent(agent, clan, type, aList->nextAgent->pos);
+    Agent *castle = aList->nextAgent;
+    initAgent(agent, clan, type, castle->pos);
     setAgentOnBoard(agent);
 
     Agent *tail = aList->nextAgent;
@@ -124,6 +125,7 @@ Vector2 getFreeNextPos(Vector2 pos) {
         return down;
     if (canMove(left))
         return left;
+    return pos;
 }
 
 bool canMove(Vector2 dest) {
@@ -168,4 +170,77 @@ void updateTurn(int count) {
     if (count % 2 == 0) {
         g_world.turn++;
     }
+}
+
+int getTreasure(char clan) {
+    return (clan == RED) ? g_world.redTreasure : g_world.blueTreasure;
+}
+
+void spendTreasure(int cost, char clan) {
+    if (clan == RED) {
+        g_world.redTreasure -= cost;
+    } else if (clan == BLUE) {
+        g_world.blueTreasure -= cost;
+    }
+}
+
+int getAgentTimeBuild(char type) {
+    switch (type) {
+        case CASTLE:
+            return TIME_CASTLE;
+        case BARON:
+            return TIME_BARON;
+        case WARRIOR:
+            return TIME_WARRIOR;
+        case VILLAGER:
+            return TIME_VILLAGER;
+        default:
+            return -1;
+    }
+}
+
+int getAgentCost(char type) {
+    switch (type) {
+        case CASTLE:
+            return COST_CASTLE;
+        case BARON:
+            return COST_BARON;
+        case WARRIOR:
+            return COST_WARRIOR;
+        case VILLAGER:
+            return COST_VILLAGER;
+        default:
+            return -1;
+    }
+}
+
+bool canBuild(Agent *castle, char type) {
+    return castle->product == FREE && getTreasure(castle->clan) >= getAgentCost(type);
+}
+
+void buildAgent(Agent *castle, char type) {
+    if (canBuild(castle, type)) {
+        castle->product = type;
+        castle->time = getAgentTimeBuild(type);
+        spendTreasure(getAgentCost(type), castle->clan);
+    }
+}
+
+void updateBuild(AList aList) {
+    Agent *agent = aList->nextAgent;
+    while(agent != NULL) {
+        if (agent->product != FREE) {
+            agent->time--;
+            if (agent->time <= 0 && hasAvailableSpaceToBuild(agent->pos)) {
+                addAgent(aList, agent->clan, agent->product);
+                agent->product = FREE;
+            }
+        }
+        agent = agent->nextAgent;
+    }
+}
+
+bool hasAvailableSpaceToBuild(Vector2 pos) {
+    Vector2 vector = getFreeNextPos(pos);
+    return g_world.board[vector.y][vector.x].inhabitants == NULL;
 }

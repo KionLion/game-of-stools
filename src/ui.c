@@ -66,11 +66,12 @@ void showAgent(Agent *agent) {
 }
 
 void showClanInfo(AList aList) {
+    printf("\nTurn: %d", g_world.turn);
     if (aList->clan == RED) {
-        printf("\nPlayer turn: RED");
+        printf("\nPlayer: RED");
         printf("\nTreasure: %d", g_world.redTreasure);
     } else if (aList->clan == BLUE) {
-        printf("\nPlayer turn: BLUE");
+        printf("\nPlayer: BLUE");
         printf("\nTreasure: %d", g_world.blueTreasure);
     }
     printf("\n");
@@ -105,9 +106,37 @@ void showCommandAgent(AList aList, char type) {
 
 void showCommandCastle(Agent *agent) {
     printf("\n1 . Nothing");
-    printf("\n2 . Build Baron");
-    printf("\n3 . Build Warrior");
-    printf("\n4 . Build Villager");
+    if (canBuild(agent, BARON))
+        printf("\n2 . Build Baron (%d gold and %d turns)", COST_BARON, TIME_BARON);
+    if (canBuild(agent, WARRIOR))
+        printf("\n3 . Build Warrior (%d gold and %d turns)", COST_WARRIOR, TIME_WARRIOR);
+    if (canBuild(agent, VILLAGER))
+        printf("\n4 . Build Villager (%d gold and %d turns)", COST_VILLAGER, TIME_VILLAGER);
+    printf("\n\n");
+    switch (get_user_entry_interval(1, 4)) {
+        case 1:
+            // NOTHING
+            break;
+        case 2:
+            buildAgent(agent, BARON);
+            break;
+        case 3:
+            buildAgent(agent, WARRIOR);
+            break;
+        case 4:
+            buildAgent(agent, VILLAGER);
+            break;
+        default:
+            // NOTHING
+            break;
+    }
+}
+
+void showCommandBaron(Agent *agent) {
+    printf("\n1 . Nothing");
+    printf("\n2 . New Destination");
+    printf("\n3 . Build Castle (%d gold and %d turns)", COST_CASTLE, TIME_CASTLE);
+    printf("\n4 . Remove");
     printf("\n\n");
     switch (get_user_entry_interval(1, 4)) {
         case 1:
@@ -128,41 +157,11 @@ void showCommandCastle(Agent *agent) {
     }
 }
 
-void showCommandBaron(Agent *agent) {
-    printf("\n1 . Nothing");
-    printf("\n2 . New Destination");
-    printf("\n3 . Claim");
-    printf("\n4 . Build Castle");
-    printf("\n5 . Remove");
-    printf("\n\n");
-    switch (get_user_entry_interval(1, 5)) {
-        case 1:
-            //CMD_END_TURN;
-            break;
-        case 2:
-            //CMD_END_TURN;
-            break;
-        case 3:
-            //CMD_END_TURN;
-            break;
-        case 4:
-            //CMD_END_TURN;
-            break;
-        case 5:
-            //CMD_END_TURN;
-            break;
-        default:
-            //CMD_VOID;
-            break;
-    }
-}
-
 void showCommandWarrior(Agent *agent) {
     printf("\n1 . Nothing");
     printf("\n2 . New Destination");
     printf("\n3 . Claim");
-    printf("\n4 . Build Castle");
-    printf("\n5 . Remove");
+    printf("\n4 . Remove");
     printf("\n\n");
     switch (get_user_entry_interval(1, 5)) {
         case 1:
@@ -175,9 +174,6 @@ void showCommandWarrior(Agent *agent) {
             //CMD_END_TURN;
             break;
         case 4:
-            //CMD_END_TURN;
-            break;
-        case 5:
             //CMD_END_TURN;
             break;
         default:
@@ -190,7 +186,7 @@ void showCommandVillager(Agent *agent) {
     printf("\n1 . Nothing");
     printf("\n2 . New Destination");
     printf("\n3 . Collect");
-    printf("\n4 . Take Up Arms");
+    printf("\n4 . Take Up Arms (%d gold)", COST_WARRIOR);
     printf("\n5 . Remove");
     printf("\n\n");
     switch (get_user_entry_interval(1, 5)) {
@@ -218,18 +214,12 @@ void showCommandVillager(Agent *agent) {
 int showCommandTurn() {
     printf("End your turn?\n");
     printf("\n1 . End Turn");
-    printf("\n2 . Save");
-    printf("\n3 . Load");
     printf("\n4 . Quit");
     printf("\n\n");
-    switch (get_user_entry_interval(1, 4)) {
+    switch (get_user_entry_interval(1, 2)) {
         case 1:
             return CMD_END_TURN;
         case 2:
-            return CMD_SAVE;
-        case 3:
-            return CMD_LOAD;
-        case 4:
             return CMD_QUIT;
         default:
             return CMD_END_TURN;

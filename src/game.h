@@ -24,6 +24,7 @@
 #define TIME_VILLAGER 2
 #define TIME_WARRIOR 4
 #define TIME_BARON 6
+#define TIME_CASTLE 1
 
 #define COST_VILLAGER 1
 #define COST_WARRIOR 5
@@ -105,13 +106,21 @@ AList getWinnner();
 bool isEndGame(int cmd);
 void updateTurn(int count);
 
+int getTreasure(char clan);
+void spendTreasure(int cost, char clan);
+int getAgentTimeBuild(char type);
+int getAgentCost(char type);
+bool canBuild(Agent *castle, char type);
+void buildAgent(Agent *castle, char type);
+void updateBuild(AList aList);
+bool hasAvailableSpaceToBuild(Vector2 pos);
+
 void wait(Cell cell, Agent *agent);
 void setDestination(Agent *agent);
 void claim(Cell cell, Agent *agent);
 void recolt(Cell cell, Agent *agent);
 void takeUpArms(Cell cell, Agent *agent);
 void buildCastle(Cell cell, AList aList, char clan);
-void product(Cell cell, AList aList, char clan, char type);
 void delete(Cell cell, AList aList, Agent *agent);
 void endTurn();
 void endGame();
