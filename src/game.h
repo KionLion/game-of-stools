@@ -31,10 +31,9 @@
 #define COST_BARON 10
 #define COST_CASTLE 30
 
-#define MAX_MOVE 1;
-
 #define INIT_TEASURE 50
 
+// List of commands
 #define CMD_VOID 0
 #define CMD_QUIT -1
 #define CMD_END_TURN 1
@@ -84,48 +83,96 @@ extern World g_world;
 
 /* API */
 
+// Init the world
 void initWorld();
+
+// Init the board
 void initBoard();
+
+// Init agent with clan, type and position
 void initAgent(Agent *agent, char clan, char type, Vector2 pos);
+
+// Create a clan at position
 AList createClan(char clan, Vector2 pos);
+
+// Create a castle at position
 AList createCastle(char clan, Vector2 pos);
+
+// Add one agent to the list of agent
 void addAgent(AList aList, char clan, char type);
+
+// Set an agent to the board
 void setAgentOnBoard(Agent *agent);
+
+// Move an agent
 void moveAgent(Agent *agent);
-bool isCastle(Agent *agent);
+
+// Check if an agent has a destination
 bool hasDestination(Agent *agent);
+
+// Get a free position (no agent) next to the position (up, left, down, right)
 Vector2 getFreeNextPos(Vector2 pos);
+
+// Check if the destination can be reached by an agent
 bool canMove(Vector2 dest);
+
+// Check if the cell at position is free (no agent)
 bool isFreeCell(Vector2 pos);
+
+// Check if a position is on the board
 bool isOnBoard(Vector2 pos);
+
+// Counts the number of agents (by type) in an agent list
 int countAgentInList(AList aList, char type);
 
+// Get a random list from the different player colors
 AList getRandomColor();
+
+// Get this opposite list of player in order to switch turn
 AList switchTurn(AList current);
+
+// Get the winner
 AList getWinnner();
+
+// Check if the game is ended
 bool isEndGame(int cmd);
+
+// Update turn count
 void updateTurn(int count);
 
+// Get treasure clan
 int getTreasure(char clan);
+
+// Spend treasure clan with cost
 void spendTreasure(int cost, char clan);
+
+// Update turn count
 int getAgentTimeBuild(char type);
+
+// Get the cost of an agent
 int getAgentCost(char type);
+
+// Check if a castle can build an agent type
 bool canBuild(Agent *castle, char type);
+
+// Build an agent type into castle
 void buildAgent(Agent *castle, char type);
+
+// Update build from player list
 void updateBuild(AList aList);
+
+// Check if there is enough space to build around the position
 bool hasAvailableSpaceToBuild(Vector2 pos);
 
-void wait(Cell cell, Agent *agent);
-void setDestination(Agent *agent);
-void claim(Cell cell, Agent *agent);
-void recolt(Cell cell, Agent *agent);
-void takeUpArms(Cell cell, Agent *agent);
-void buildCastle(Cell cell, AList aList, char clan);
-void delete(Cell cell, AList aList, Agent *agent);
-void endTurn();
-void endGame();
-
-//TODO: Axel - Production (game files)
-//TODO: Axel - Move (game files)
+//TODO:
+//void wait(Cell cell, Agent *agent);
+//void setDestination(Agent *agent);
+//void claim(Cell cell, Agent *agent);
+//void recolt(Cell cell, Agent *agent);
+//void takeUpArms(Cell cell, Agent *agent);
+//void buildCastle(Cell cell, AList aList, char clan);
+//void delete(Cell cell, AList aList, Agent *agent);
+//void endTurn();
+//void endGame();
 
 #endif //GAME_OF_STOOLS_GAME_H

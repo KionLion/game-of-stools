@@ -127,7 +127,6 @@ void showCommandCastle(Agent *agent) {
             buildAgent(agent, VILLAGER);
             break;
         default:
-            // NOTHING
             break;
     }
 }
@@ -140,19 +139,14 @@ void showCommandBaron(Agent *agent) {
     printf("\n\n");
     switch (get_user_entry_interval(1, 4)) {
         case 1:
-            //CMD_END_TURN;
             break;
         case 2:
-            //CMD_END_TURN;
             break;
         case 3:
-            //CMD_END_TURN;
             break;
         case 4:
-            //CMD_END_TURN;
             break;
         default:
-            //CMD_VOID;
             break;
     }
 }
@@ -165,19 +159,14 @@ void showCommandWarrior(Agent *agent) {
     printf("\n\n");
     switch (get_user_entry_interval(1, 5)) {
         case 1:
-            //CMD_END_TURN;
             break;
         case 2:
-            //CMD_END_TURN;
             break;
         case 3:
-            //CMD_END_TURN;
             break;
         case 4:
-            //CMD_END_TURN;
             break;
         default:
-            //CMD_VOID;
             break;
     }
 }
@@ -191,22 +180,16 @@ void showCommandVillager(Agent *agent) {
     printf("\n\n");
     switch (get_user_entry_interval(1, 5)) {
         case 1:
-            //CMD_END_TURN;
             break;
         case 2:
-            //CMD_END_TURN;
             break;
         case 3:
-            //CMD_END_TURN;
             break;
         case 4:
-            //CMD_END_TURN;
             break;
         case 5:
-            //CMD_END_TURN;
             break;
         default:
-            //CMD_VOID;
             break;
     }
 }

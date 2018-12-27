@@ -86,24 +86,6 @@ void setAgentOnBoard(Agent *agent) {
 
 void moveAgent(Agent *agent) {
     //TODO: Move
-    if (agent->type != CASTLE && hasDestination(agent) && canMove(agent->dest)) {
-        int deltaX = get_sign(agent->dest.x - agent->pos.x);
-        int deltaY = get_sign(agent->dest.y - agent->pos.y);
-//        g_world.board[agent->pos.y][agent->pos.x].inhabitants = NULL;
-        if (deltaX == 0) {
-            agent->pos.y += deltaY;
-        } else if (deltaY == 0) {
-            agent->pos.x += deltaX;
-        } else {
-            bool vector = get_random_boolean();
-            if (vector) {
-                agent->pos.x += deltaX;
-            } else {
-                agent->pos.y += deltaY;
-            }
-        }
-//        g_world.board[agent->pos.y][agent->pos.x].inhabitants = agent;
-    }
 }
 
 bool hasDestination(Agent *agent) {

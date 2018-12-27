@@ -14,6 +14,7 @@
 
 /* API */
 
+// Play game
 void play();
 
 #endif //GAME_OF_STOOLS_MAIN_H
