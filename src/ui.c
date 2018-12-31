@@ -2,16 +2,6 @@
 
 World g_world;
 
-void showAgentList(AList aList) {
-    if (aList == NULL)
-        exit(EXIT_FAILURE);
-    Agent *agent = aList->nextAgent;
-    while(agent != NULL) {
-        printf("{%c-%c(%d,%d)}\n", agent->clan, agent->type, agent->pos.x, agent->pos.y);
-        agent = agent->nextAgent;
-    }
-}
-
 void showAsciiBoard() {
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
@@ -44,7 +34,7 @@ void showAsciiCell(Cell cell) {
 }
 
 void showAgent(Agent *agent) {
-    printf("\n");
+    printf("\n#");
     if (agent->clan == RED) {
         printf("Red ");
     } else if (agent->clan == BLUE) {
@@ -61,8 +51,7 @@ void showAgent(Agent *agent) {
     } else {
         printf("(NULL) ");
     }
-    printf("(%d, %d)", agent->pos.x, agent->pos.y);
-    printf("\n\n");
+    printf("(%d, %d). ", agent->pos.x, agent->pos.y);
 }
 
 void showClanInfo(AList aList) {
@@ -77,34 +66,7 @@ void showClanInfo(AList aList) {
     printf("\n");
 }
 
-void showCommandAgent(AList aList, char type) {
-    Agent *agent = aList->nextAgent;
-    do {
-        if (agent->type == type) {
-            showAgent(agent);
-            printf("Your order?\n");
-            switch (type) {
-                case CASTLE:
-                    showCommandCastle(agent);
-                    break;
-                case BARON:
-                    showCommandBaron(agent);
-                    break;
-                case WARRIOR:
-                    showCommandWarrior(agent);
-                    break;
-                case VILLAGER:
-                    showCommandVillager(agent);
-                    break;
-                default:
-                    break;
-            }
-        }
-        agent = agent->nextAgent;
-    } while (agent != NULL);
-}
-
-void showCommandCastle(Agent *agent) {
+void showCastleCommands(Agent *agent) {
     printf("\n1 . Nothing");
     if (canBuild(agent, BARON))
         printf("\n2 . Build Baron (%d gold and %d turns)", COST_BARON, TIME_BARON);
@@ -113,98 +75,36 @@ void showCommandCastle(Agent *agent) {
     if (canBuild(agent, VILLAGER))
         printf("\n4 . Build Villager (%d gold and %d turns)", COST_VILLAGER, TIME_VILLAGER);
     printf("\n\n");
-    switch (get_user_entry_interval(1, 4)) {
-        case 1:
-            // NOTHING
-            break;
-        case 2:
-            buildAgent(agent, BARON);
-            break;
-        case 3:
-            buildAgent(agent, WARRIOR);
-            break;
-        case 4:
-            buildAgent(agent, VILLAGER);
-            break;
-        default:
-            break;
-    }
 }
 
-void showCommandBaron(Agent *agent) {
+void showBaronCommands(Agent *agent) {
     printf("\n1 . Nothing");
     printf("\n2 . New Destination");
     printf("\n3 . Build Castle (%d gold and %d turns)", COST_CASTLE, TIME_CASTLE);
     printf("\n4 . Remove");
     printf("\n\n");
-    switch (get_user_entry_interval(1, 4)) {
-        case 1:
-            break;
-        case 2:
-            break;
-        case 3:
-            break;
-        case 4:
-            break;
-        default:
-            break;
-    }
 }
 
-void showCommandWarrior(Agent *agent) {
+void showWarriorCommands(Agent *agent) {
     printf("\n1 . Nothing");
     printf("\n2 . New Destination");
     printf("\n3 . Claim");
     printf("\n4 . Remove");
     printf("\n\n");
-    switch (get_user_entry_interval(1, 5)) {
-        case 1:
-            break;
-        case 2:
-            break;
-        case 3:
-            break;
-        case 4:
-            break;
-        default:
-            break;
-    }
 }
 
-void showCommandVillager(Agent *agent) {
+void showVillagerCommands(Agent *agent) {
     printf("\n1 . Nothing");
     printf("\n2 . New Destination");
     printf("\n3 . Collect");
     printf("\n4 . Take Up Arms (%d gold)", COST_WARRIOR);
     printf("\n5 . Remove");
     printf("\n\n");
-    switch (get_user_entry_interval(1, 5)) {
-        case 1:
-            break;
-        case 2:
-            break;
-        case 3:
-            break;
-        case 4:
-            break;
-        case 5:
-            break;
-        default:
-            break;
-    }
 }
 
-int showCommandTurn() {
+int showTurnCommands() {
     printf("End your turn?\n");
     printf("\n1 . End Turn");
-    printf("\n4 . Quit");
+    printf("\n2 . Quit");
     printf("\n\n");
-    switch (get_user_entry_interval(1, 2)) {
-        case 1:
-            return CMD_END_TURN;
-        case 2:
-            return CMD_QUIT;
-        default:
-            return CMD_END_TURN;
-    }
 }
