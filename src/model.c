@@ -7,6 +7,7 @@ void initWorld() {
     g_world.blueTreasure = INIT_TEASURE;
     g_world.red = createClan(RED, (Vector2){0, 0});
     g_world.blue = createClan(BLUE, (Vector2){COLS - 1, ROWS - 1});
+    g_world.current = NULL;
 }
 
 void initBoard() {
@@ -51,7 +52,7 @@ AList createCastle(char clan, Vector2 pos) {
 
     initAgent(aList, clan, FREE, pos);
     initAgent(castle, clan, CASTLE, pos);
-    setAgentOnBoard(castle);
+    addAgentOnBoard(castle);
 
     aList->nextAgent = castle;
     return aList;
@@ -64,23 +65,59 @@ void addAgent(AList aList, char clan, char type) {
 
     Agent *castle = aList->nextAgent;
     initAgent(agent, clan, type, castle->pos);
-    setAgentOnBoard(agent);
+    addAgentOnBoard(agent);
 
-    Agent *tail = aList->nextAgent;
-    while(tail->nextAgent != NULL) {
-        tail = tail->nextAgent;
+    Agent *next = aList->nextAgent;
+    while(next->nextAgent != NULL) {
+        next = next->nextAgent;
     }
-    tail->nextAgent = agent;
+    next->nextAgent = agent;
 }
 
-void setAgentOnBoard(Agent *agent) {
+void removeAgent(AList aList, Agent *agent) {
+    Agent *current = aList->nextAgent;
+    Agent *next = NULL;
+    if (agent->type == CASTLE) { // Delete all agents belong to castle
+        while (current != NULL) {
+            removeAgentOnBoard(current);
+            next = current->nextAgent;
+            free(current);
+            current = next;
+        }
+        aList->nextAgent = NULL;
+    } else {
+        next = aList->nextAgent;
+        while (next->nextAgent != NULL && agent != next) { // Search and delete
+            printf("%p = %p", next, agent);
+            current = next;
+            next = next->nextAgent;
+        }
+        if (agent == next) {
+            removeAgentOnBoard(agent);
+            current->nextAgent = agent->nextAgent;
+            free(agent);
+        }
+    }
+}
+
+void addAgentOnBoard(Agent *agent) {
     int row = agent->pos.y;
     int col = agent->pos.x;
-    g_world.board[row][col].clan = agent->clan;
     if (agent->type == CASTLE) {
         g_world.board[row][col].castle = agent;
     } else {
         g_world.board[row][col].inhabitants = agent;
+    }
+    claim(agent);
+}
+
+void removeAgentOnBoard(Agent *agent) {
+    int row = agent->pos.y;
+    int col = agent->pos.x;
+    if (agent->type == CASTLE) {
+        g_world.board[row][col].castle = NULL;
+    } else {
+        g_world.board[row][col].inhabitants = NULL;
     }
 }
 
@@ -107,7 +144,8 @@ bool canMove(Vector2 dest) {
 }
 
 bool isFreeCell(Vector2 pos) {
-    return g_world.board[pos.y][pos.x].inhabitants == NULL;
+    return g_world.board[pos.y][pos.x].inhabitants == NULL
+        && g_world.board[pos.y][pos.x].castle == NULL;
 }
 
 bool isOnBoard(Vector2 pos) {
@@ -118,12 +156,12 @@ int countAgentInList(AList aList, char type) {
     return (aList != NULL && aList->type == type) ? 1 : 0;
 }
 
-AList  getRandomColor() {
-    return get_random_boolean() ? g_world.red : g_world.blue;
+void  setRandomPlayer() {
+    g_world.current = get_random_boolean() ? g_world.red : g_world.blue;
 }
 
-AList switchTurn(AList current) {
-    return (current == g_world.red) ? g_world.blue : g_world.red;
+void switchTurn() {
+    g_world.current = (g_world.current == g_world.red) ? g_world.blue : g_world.red;
 }
 
 AList getWinnner() {
@@ -220,7 +258,47 @@ bool hasAvailableSpaceToBuild(Vector2 pos) {
 }
 
 void moveAgent(Agent *agent) {
-    //TODO: Move
+    if (agent->type != CASTLE) {
+        removeAgentOnBoard(agent);
+        agent->pos = getDirectionOnMove(agent);
+        addAgentOnBoard(agent);
+    }
+    if (agent->type == WARRIOR) {
+        claim(agent);
+    }
+}
+
+Vector2 getDirectionOnMove(Agent *agent) {
+    Vector2 direction = (Vector2) {
+            get_sign(agent->dest.x - agent->pos.x),
+            get_sign(agent->dest.y - agent->pos.y)
+    };
+    Vector2 nextPosOnX = (Vector2) {agent->pos.x + direction.x, agent->pos.y};
+    Vector2 nextPosOnY = (Vector2) {agent->pos.x, agent->pos.y + direction.y};
+    bool canMoveOnX = direction.x != 0 && canMove(nextPosOnX);
+    bool canMoveOnY = direction.y != 0 && canMove(nextPosOnY);
+
+    if (canMoveOnX && canMoveOnY) {
+        if (get_random_boolean()) {
+            return nextPosOnX;
+        } else {
+            return nextPosOnY;
+        }
+    } else if (canMoveOnX) {
+        return nextPosOnX;
+    } else if (canMoveOnY) {
+        return nextPosOnY;
+    } else {
+        return agent->pos;
+    }
+}
+
+void claim(Agent *agent) {
+    if (agent->type == WARRIOR || agent->type == CASTLE) {
+        int row = agent->pos.y;
+        int col = agent->pos.x;
+        g_world.board[row][col].clan = agent->clan;
+    }
 }
 
 bool hasDestination(Agent *agent) {

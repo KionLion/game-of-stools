@@ -25,7 +25,7 @@ void showAsciiCell(Cell cell);
 void showAgent(Agent *agent);
 
 // Show the clan info (turn, color and treasure) in the terminal
-void showClanInfo(AList aList);
+void showClanInfo();
 
 // Show the command of a castle in the terminal
 void showCastleCommands(Agent *agent);
@@ -40,6 +40,12 @@ void showWarriorCommands(Agent *agent);
 void showVillagerCommands(Agent *agent);
 
 // Show the command of at the end of turn in the terminal
-int showTurnCommands();
+void showTurnCommands();
+
+// Ask and get the new destination of an agent in the terminal
+Vector2 getAgentNewDestCommands(Agent *agent);
+
+// Show winner
+void showWinner(char clan);
 
 #endif //GAME_OF_STOOLS_UI_H

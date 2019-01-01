@@ -3,6 +3,11 @@
 World g_world;
 
 void showAsciiBoard() {
+    printf("\n\n");
+    for (int j = 0; j < COLS; j++) {
+        printf("  %2d  ", j);
+    }
+    printf("\n");
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
             printf("------");
@@ -11,7 +16,7 @@ void showAsciiBoard() {
         for (int j = 0; j < COLS; j++) {
             showAsciiCell(g_world.board[i][j]);
         }
-        printf("|\n");
+        printf("| %d\n", i);
     }
     for (int j = 0; j < COLS; j++) {
         printf("------");
@@ -23,9 +28,11 @@ void showAsciiCell(Cell cell) {
     char string[] = "     ";
     if (cell.clan != FREE) {
         string[0] = cell.clan;
-        if (cell.castle != NULL){
-            string[1] = CASTLE;
-        }
+    }
+    if (cell.castle != NULL) {
+        string[1] = CASTLE;
+    }
+    if (cell.clan != FREE || cell.castle != NULL || cell.inhabitants != NULL) {
         string[2] = '0' + countAgentInList(cell.inhabitants, BARON);
         string[3] = '0' + countAgentInList(cell.inhabitants, WARRIOR);
         string[4] = '0' + countAgentInList(cell.inhabitants, VILLAGER);
@@ -54,12 +61,12 @@ void showAgent(Agent *agent) {
     printf("(%d, %d). ", agent->pos.x, agent->pos.y);
 }
 
-void showClanInfo(AList aList) {
+void showClanInfo() {
     printf("\nTurn: %d", g_world.turn);
-    if (aList->clan == RED) {
+    if (g_world.current->clan == RED) {
         printf("\nPlayer: RED");
         printf("\nTreasure: %d", g_world.redTreasure);
-    } else if (aList->clan == BLUE) {
+    } else if (g_world.current->clan == BLUE) {
         printf("\nPlayer: BLUE");
         printf("\nTreasure: %d", g_world.blueTreasure);
     }
@@ -67,6 +74,7 @@ void showClanInfo(AList aList) {
 }
 
 void showCastleCommands(Agent *agent) {
+    printf("\n0 . Remove");
     printf("\n1 . Nothing");
     if (canBuild(agent, BARON))
         printf("\n2 . Build Baron (%d gold and %d turns)", COST_BARON, TIME_BARON);
@@ -78,33 +86,51 @@ void showCastleCommands(Agent *agent) {
 }
 
 void showBaronCommands(Agent *agent) {
+    printf("\n0 . Remove");
     printf("\n1 . Nothing");
     printf("\n2 . New Destination");
     printf("\n3 . Build Castle (%d gold and %d turns)", COST_CASTLE, TIME_CASTLE);
-    printf("\n4 . Remove");
     printf("\n\n");
 }
 
 void showWarriorCommands(Agent *agent) {
+    printf("\n0 . Remove");
     printf("\n1 . Nothing");
     printf("\n2 . New Destination");
-    printf("\n3 . Claim");
-    printf("\n4 . Remove");
     printf("\n\n");
 }
 
 void showVillagerCommands(Agent *agent) {
+    printf("\n0 . Remove");
     printf("\n1 . Nothing");
     printf("\n2 . New Destination");
     printf("\n3 . Collect");
     printf("\n4 . Take Up Arms (%d gold)", COST_WARRIOR);
-    printf("\n5 . Remove");
     printf("\n\n");
 }
 
-int showTurnCommands() {
-    printf("End your turn?\n");
+void showTurnCommands() {
+    printf("\nEnd your turn?\n");
     printf("\n1 . End Turn");
     printf("\n2 . Quit");
     printf("\n\n");
+}
+
+Vector2 getAgentNewDestCommands(Agent *agent) {
+    printf("\nEnter new X position (current: %d): ", agent->dest.x);
+    int x = get_user_entry_interval(0, COLS - 1);
+    printf("\nEnter new Y position (current: %d): ", agent->dest.y);
+    int y = get_user_entry_interval(0, ROWS - 1);
+    printf("\n");
+    return (Vector2) {x, y};
+}
+
+void showWinner(char clan) {
+    printf("\n\n*********************\n");
+    if (clan == RED) {
+        printf("*   WINNER IS RED   *");
+    } else {
+        printf("*   WINNER IS BLUE  *");
+    }
+    printf("\n*********************\n\n");
 }

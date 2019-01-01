@@ -9,16 +9,16 @@
 
 /* CONSTANTS */
 
-#define COLS 18
-#define ROWS 12
+#define COLS 8
+#define ROWS 6
 
 #define RED 'R'
 #define BLUE 'B'
 #define FREE '\0'
 
-#define VILLAGER 'M'
+#define VILLAGER 'V'
 #define BARON 'B'
-#define WARRIOR 'G'
+#define WARRIOR 'W'
 #define CASTLE 'C'
 
 #define TIME_VILLAGER 2
@@ -75,6 +75,7 @@ typedef struct {
     AList red, blue;
     int turn; /* Numero du tour */
     int redTreasure, blueTreasure;
+    AList current; /* Current player */
 } World;
 
 /* GLOBAL VARIABLES */
@@ -101,8 +102,14 @@ AList createCastle(char clan, Vector2 pos);
 // Add one agent to the list of agent
 void addAgent(AList aList, char clan, char type);
 
-// Set an agent to the board
-void setAgentOnBoard(Agent *agent);
+// Remove agent in the list of agent or all list if agent is a castle
+void removeAgent(AList aList, Agent *agent);
+
+// Add an agent to the board
+void addAgentOnBoard(Agent *agent);
+
+// Remove an agent on board
+void removeAgentOnBoard(Agent *agent);
 
 // Get a free position (no agent) next to the position (up, left, down, right)
 Vector2 getFreeNextPos(Vector2 pos);
@@ -119,11 +126,11 @@ bool isOnBoard(Vector2 pos);
 // Counts the number of agents (by type) in an agent list
 int countAgentInList(AList aList, char type);
 
-// Get a random list from the different player colors
-AList getRandomColor();
+// Set a random list from the different players
+void  setRandomPlayer();
 
-// Get this opposite list of player in order to switch turn
-AList switchTurn(AList current);
+// Set the opposite list of player in order to switch turn
+void switchTurn();
 
 // Get the winner
 AList getWinnner();
@@ -152,7 +159,7 @@ bool canBuild(Agent *castle, char type);
 // Build an agent type into castle
 void buildAgent(Agent *castle, char type);
 
-// Update build from player list
+// Update build from current player list
 void updateBuild(AList aList);
 
 // Check if there is enough space to build around the position
@@ -160,6 +167,12 @@ bool hasAvailableSpaceToBuild(Vector2 pos);
 
 // Move an agent
 void moveAgent(Agent *agent);
+
+// Get the correct direction to move agent properly
+Vector2 getDirectionOnMove(Agent *agent);
+
+// Claim cell by warrior
+void claim(Agent *agent);
 
 // Check if an agent has a destination
 bool hasDestination(Agent *agent);

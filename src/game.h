@@ -23,7 +23,7 @@
 void play();
 
 // Handle agent on browsing agent list
-void handleAgent(AList aList, char type);
+void handleAgent(char type);
 
 // Handle agent commands
 void handleAgentCommands(Agent *agent);
