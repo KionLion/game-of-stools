@@ -166,6 +166,7 @@ void handleVillager(Agent *agent) {
             break;
         case 4:
             // TAKE UP ARMS
+            takeUpArms(agent);
             break;
         default:
             break;

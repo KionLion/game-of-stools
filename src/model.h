@@ -169,6 +169,9 @@ bool canCollect(Agent *agent);
 // Collect resource by villager
 void collect(Agent *agent);
 
+// Switch villager to warrior
+void takeUpArms(Agent *agent);
+
 //TODO:
 //void wait(Cell cell, Agent *agent);
 //void setDestination(Agent *agent);

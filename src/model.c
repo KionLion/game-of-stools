@@ -319,3 +319,10 @@ void collect(Agent *agent) {
         }
     }
 }
+
+void takeUpArms(Agent *agent) {
+    if (agent->type == VILLAGER && canBuild(agent, WARRIOR)) {
+        spendTreasure(getAgentCost(WARRIOR), agent->clan);
+        agent->type = WARRIOR;
+    }
+}

@@ -106,7 +106,7 @@ void showVillagerCommands(Agent *agent) {
     printf("\n2 . New Destination");
     if (canCollect(agent))
         printf("\n3 . Collect");
-    if (FALSE)
+    if (canBuild(agent, WARRIOR))
         printf("\n4 . Take Up Arms (%d gold)", COST_WARRIOR);
     printf("\n\n");
 }
