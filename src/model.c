@@ -304,3 +304,18 @@ void claim(Agent *agent) {
 bool hasDestination(Agent *agent) {
     return agent->dest.x != agent->pos.x || agent->dest.y != agent->pos.y;
 }
+
+bool canCollect(Agent *agent) {
+    return agent->type == VILLAGER
+    && g_world.board[agent->pos.y][agent->pos.x].clan == agent->clan;
+}
+
+void collect(Agent *agent) {
+    if (canCollect(agent)) {
+        if (agent->clan == RED) {
+            g_world.redTreasure += VILLAGER_COLLECT_VALUE;
+        } else if (agent->clan == BLUE) {
+            g_world.blueTreasure += VILLAGER_COLLECT_VALUE;
+        }
+    }
+}

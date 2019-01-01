@@ -104,8 +104,10 @@ void showVillagerCommands(Agent *agent) {
     printf("\n0 . Remove");
     printf("\n1 . Nothing");
     printf("\n2 . New Destination");
-    printf("\n3 . Collect");
-    printf("\n4 . Take Up Arms (%d gold)", COST_WARRIOR);
+    if (canCollect(agent))
+        printf("\n3 . Collect");
+    if (FALSE)
+        printf("\n4 . Take Up Arms (%d gold)", COST_WARRIOR);
     printf("\n\n");
 }
 
@@ -129,7 +131,7 @@ void showWinner(char clan) {
     printf("\n\n*********************\n");
     if (clan == RED) {
         printf("*   WINNER IS RED   *");
-    } else {
+    } else if (clan == BLUE) {
         printf("*   WINNER IS BLUE  *");
     }
     printf("\n*********************\n\n");

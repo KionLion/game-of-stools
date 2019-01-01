@@ -162,6 +162,7 @@ void handleVillager(Agent *agent) {
             break;
         case 3:
             // COLLECT
+            collect(agent);
             break;
         case 4:
             // TAKE UP ARMS

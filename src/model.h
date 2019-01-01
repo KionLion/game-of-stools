@@ -33,21 +33,7 @@
 
 #define INIT_TEASURE 50
 
-// List of commands
-#define CMD_VOID 0
-#define CMD_QUIT -1
-#define CMD_END_TURN 1
-#define CMD_SAVE 2
-#define CMD_LOAD 3
-#define CMD_AGENT_NEW_DEST 10
-#define CMD_AGENT_REMOVE 11
-#define CMD_CASTLE_BUILD_BARON 20
-#define CMD_CASTLE_BUILD_WARRIOR 21
-#define CMD_CASTLE_BUILD_VILLAGER 22
-#define CMD_BARON_BUILD_CASTLE 30
-#define CMD_WARRIOR_CLAIM 40
-#define CMD_VILLAGER_COLLECT 50
-#define CMD_VILLAGER_TAKE_UP_ARMS 51
+#define VILLAGER_COLLECT_VALUE 1
 
 /* STRUCTURE */
 
@@ -176,6 +162,12 @@ void claim(Agent *agent);
 
 // Check if an agent has a destination
 bool hasDestination(Agent *agent);
+
+// Check if the agent can collect
+bool canCollect(Agent *agent);
+
+// Collect resource by villager
+void collect(Agent *agent);
 
 //TODO:
 //void wait(Cell cell, Agent *agent);
