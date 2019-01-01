@@ -9,6 +9,9 @@ void play() {
     setRandomPlayer();
     int count = 0;
     do {
+        // Handle save / load
+        handleSaveLoad();
+
         // Update turn and builds
         updateTurn(count++);
         updateBuild(g_world.current);
@@ -182,6 +185,29 @@ void handleTurnCommands() {
         case 2:
             // QUIT GAME
             exit(0);
+        default:
+            break;
+    }
+}
+
+void handleSaveLoad() {
+    showSaveCommands();
+    switch (get_user_entry_interval(1, 3)) {
+        case 1:
+            // CONTINUE
+            break;
+        case 2:
+            // SAVE
+            printf("\nEnter the name of the file to save: ");
+            save(get_user_entry(200));
+            printf("\nFile saved!");
+            break;
+        case 3:
+            // LOAD
+            printf("\nEnter the name of the file to load: ");
+            load(get_user_entry(200));
+            printf("\nFile loaded!");
+            break;
         default:
             break;
     }

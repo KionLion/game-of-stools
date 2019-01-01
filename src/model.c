@@ -25,7 +25,7 @@ void initAgent(Agent *agent, char clan, char type, Vector2 pos) {
     agent->clan = clan;
     agent->type = type;
     agent->product = FREE;
-    agent->time = -1;
+    agent->time = 0;
     agent->pos = pos;
     agent->dest = pos;
     agent->nextAgent = NULL;
@@ -207,7 +207,7 @@ int getAgentTimeBuild(char type) {
         case VILLAGER:
             return TIME_VILLAGER;
         default:
-            return -1;
+            return 0;
     }
 }
 
@@ -325,4 +325,44 @@ void takeUpArms(Agent *agent) {
         spendTreasure(getAgentCost(WARRIOR), agent->clan);
         agent->type = WARRIOR;
     }
+}
+
+void save(char *filename) {
+    char data[10000];
+    if (g_world.current->clan == RED) {
+        sprintf(data, "%s%c %d %d %d\n", data, g_world.current->clan,
+                g_world.turn, g_world.redTreasure, g_world.blueTreasure);
+    } else if (g_world.current->clan == BLUE) {
+        sprintf(data, "%s%c %d %d %d\n", data, g_world.current->clan,
+                g_world.turn, g_world.blueTreasure, g_world.redTreasure);
+    }
+
+    Agent *agent = g_world.red->nextAgent;
+    while(agent != NULL) {
+        sprintf(data, "%s%c%c%c %d %d %d %d %d\n", data,
+                agent->clan, agent->type, agent->product == FREE ? FREE_CHAR_IN_FILE : agent->product,
+                agent->time, agent->pos.x, agent->pos.y, agent->dest.x, agent->pos.y);
+        agent = agent->nextAgent;
+    }
+    agent = g_world.blue->nextAgent;
+    while(agent != NULL) {
+        sprintf(data, "%s%c%c%c %d %d %d %d %d\n", data,
+                agent->clan, agent->type, agent->product == FREE ? FREE_CHAR_IN_FILE : agent->product,
+                agent->time, agent->pos.x, agent->pos.y, agent->dest.x, agent->pos.y);
+        agent = agent->nextAgent;
+    }
+
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            sprintf(data, "%s%c", data, g_world.board[i][j].clan == FREE ? FREE_CHAR_IN_FILE : g_world.board[i][j].clan);
+        }
+        sprintf(data, "%s\n", data);
+    }
+
+    strcat(filename, EXT_SAVE_FILE);
+    write_file(filename, data);
+}
+
+void load(char *filename) {
+
 }

@@ -42,6 +42,9 @@ void showVillagerCommands(Agent *agent);
 // Show the command of at the end of turn in the terminal
 void showTurnCommands();
 
+// Show save and load commands
+void showSaveCommands();
+
 // Ask and get the new destination of an agent in the terminal
 Vector2 getAgentNewDestCommands(Agent *agent);
 

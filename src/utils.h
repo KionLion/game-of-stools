@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <string.h>
 
 /* CONSTANTS */
 
@@ -53,5 +54,8 @@ int get_user_entry_interval(int min, int max);
 
 // Clean input / stdin
 bool clean_stdin();
+
+// Write data in file
+void write_file(char *filepath, char *data);
 
 #endif //GAME_OF_STOOLS_UTILS_H

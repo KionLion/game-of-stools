@@ -20,6 +20,7 @@ int get_sign(int x) {
 
 void set_user_entry(char *entry, int maxLength) {
     fgets(entry, maxLength - 1, stdin);
+    entry[strcspn(entry, "\r\n")] = 0; // remove "\r\n" from entry
 }
 
 char *get_user_entry(int maxLength) {
@@ -51,6 +52,16 @@ bool clean_stdin() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF) {}
     return TRUE;
+}
+
+void write_file(char *filepath, char *data) {
+    FILE *f = fopen(filepath, "w");
+    if (f == NULL) {
+        printf("Error opening file!\n");
+        exit(EXIT_FAILURE);
+    }
+    fprintf(f, "%s", data);
+    fclose(f);
 }
 
 

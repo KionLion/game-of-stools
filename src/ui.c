@@ -118,6 +118,13 @@ void showTurnCommands() {
     printf("\n\n");
 }
 
+void showSaveCommands() {
+    printf("\n1 . Continue");
+    printf("\n2 . Save");
+    printf("\n3 . Load");
+    printf("\n\n");
+}
+
 Vector2 getAgentNewDestCommands(Agent *agent) {
     printf("\nEnter new X position (current: %d): ", agent->dest.x);
     int x = get_user_entry_interval(0, COLS - 1);

@@ -43,4 +43,7 @@ void handleVillager(Agent *agent);
 // Handle turn commands
 void handleTurnCommands();
 
+// Handle save and load
+void handleSaveLoad();
+
 #endif //GAME_OF_STOOLS_GAME_H

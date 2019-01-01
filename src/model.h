@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "utils.h"
 
 /* CONSTANTS */
@@ -34,6 +35,9 @@
 #define INIT_TEASURE 50
 
 #define VILLAGER_COLLECT_VALUE 1
+
+#define EXT_SAVE_FILE ".txt"
+#define FREE_CHAR_IN_FILE '-'
 
 /* STRUCTURE */
 
@@ -172,15 +176,10 @@ void collect(Agent *agent);
 // Switch villager to warrior
 void takeUpArms(Agent *agent);
 
-//TODO:
-//void wait(Cell cell, Agent *agent);
-//void setDestination(Agent *agent);
-//void claim(Cell cell, Agent *agent);
-//void recolt(Cell cell, Agent *agent);
-//void takeUpArms(Cell cell, Agent *agent);
-//void buildCastle(Cell cell, AList aList, char clan);
-//void delete(Cell cell, AList aList, Agent *agent);
-//void endTurn();
-//void endGame();
+// Save by filename
+void save(char *filename);
+
+//Load by filename
+void load(char *filename);
 
 #endif //GAME_OF_STOOLS_MODEL_H
