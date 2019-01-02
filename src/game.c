@@ -9,12 +9,12 @@ void play() {
     setRandomPlayer();
     int count = 0;
     do {
-        // Handle save / load
-        handleSaveLoad();
-
         // Update turn and builds
         updateTurn(count++);
         updateBuild(g_world.current);
+
+        // Handle save / load
+        handleSaveLoad();
 
         // Handle agent by type
         handleAgent(CASTLE);
@@ -184,7 +184,7 @@ void handleTurnCommands() {
             break;
         case 2:
             // QUIT GAME
-            exit(0);
+            exit(EXIT_SUCCESS);
         default:
             break;
     }

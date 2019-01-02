@@ -90,7 +90,7 @@ AList createClan(char clan, Vector2 pos);
 AList createCastle(char clan, Vector2 pos);
 
 // Add one agent to the list of agent
-void addAgent(AList aList, char clan, char type);
+Agent *addAgent(AList aList, char clan, char type, Vector2 pos);
 
 // Remove agent in the list of agent or all list if agent is a castle
 void removeAgent(AList aList, Agent *agent);
@@ -179,7 +179,19 @@ void takeUpArms(Agent *agent);
 // Save by filename
 void save(char *filename);
 
+// Append agent data to data array
+void appendAgentData(AList aList, char data[]);
+
+// Append board to data array
+void appendBoardData(char data[]);
+
 //Load by filename
 void load(char *filename);
+
+// Initialize cell from data
+void loadBoardFromData(char *data);
+
+// Initialize agents from data
+void loadAgentFromData(char **data, int i);
 
 #endif //GAME_OF_STOOLS_MODEL_H

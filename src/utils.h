@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include <assert.h>
 
 /* CONSTANTS */
 
@@ -57,5 +58,17 @@ bool clean_stdin();
 
 // Write data in file
 void write_file(char *filepath, char *data);
+
+// Read data from file
+void read_file(char *filepath, char *data);
+
+// Convert char to int
+int parse_int(char *digits);
+
+// Convert int to char
+char parse_char(int ch);
+
+// Split string with delim to array of string
+char** str_split(char* a_str, const char a_delim);
 
 #endif //GAME_OF_STOOLS_UTILS_H

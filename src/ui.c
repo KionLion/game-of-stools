@@ -33,9 +33,9 @@ void showAsciiCell(Cell cell) {
         string[1] = CASTLE;
     }
     if (cell.clan != FREE || cell.castle != NULL || cell.inhabitants != NULL) {
-        string[2] = '0' + countAgentInList(cell.inhabitants, BARON);
-        string[3] = '0' + countAgentInList(cell.inhabitants, WARRIOR);
-        string[4] = '0' + countAgentInList(cell.inhabitants, VILLAGER);
+        string[2] = parse_char(countAgentInList(cell.inhabitants, BARON));
+        string[3] = parse_char(countAgentInList(cell.inhabitants, WARRIOR));
+        string[4] = parse_char(countAgentInList(cell.inhabitants, VILLAGER));
     }
     printf("|%s", string);
 }
@@ -74,6 +74,23 @@ void showClanInfo() {
 }
 
 void showCastleCommands(Agent *agent) {
+    if (agent->product != FREE) {
+        printf("\n/!\\ ");
+        switch (agent->product) {
+            case BARON:
+                printf("Baron ");
+                break;
+            case WARRIOR:
+                printf("Warrior ");
+                break;
+            case VILLAGER:
+                printf("Villager ");
+                break;
+            default:
+                break;
+        }
+        printf("arrive in %d turn(s).\n", agent->time);
+    }
     printf("\n0 . Remove");
     printf("\n1 . Nothing");
     if (canBuild(agent, BARON))
