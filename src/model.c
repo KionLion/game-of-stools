@@ -88,7 +88,6 @@ void removeAgent(AList aList, Agent *agent) {
     } else {
         next = aList->nextAgent;
         while (next->nextAgent != NULL && agent != next) { // Search and delete
-            printf("%p = %p", next, agent);
             current = next;
             next = next->nextAgent;
         }
@@ -156,7 +155,7 @@ int countAgentInList(AList aList, char type) {
     return (aList != NULL && aList->type == type) ? 1 : 0;
 }
 
-void  setRandomPlayer() {
+void setRandomPlayer() {
     g_world.current = get_random_boolean() ? g_world.red : g_world.blue;
 }
 
