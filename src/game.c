@@ -1,246 +1,216 @@
 #include "game.h"
 
-void initWorld() {
-    initBoard();
-    g_world.turn = 0;
-    g_world.redTreasure = INIT_TEASURE;
-    g_world.blueTreasure = INIT_TEASURE;
-    g_world.red = createClan(RED, (Vector2){0, 0});
-    g_world.blue = createClan(BLUE, (Vector2){COLS - 1, ROWS - 1});
+World g_world;
+
+void play() {
+    // Init global world variable
+    initWorld();
+    // Set a random player to start
+    setRandomPlayer();
+    int count = 0;
+    do {
+        // Update turn and builds
+        updateTurn(count++);
+        updateBuild(g_world.current);
+
+        // Handle save / load
+        handleSaveLoad();
+
+        // Handle agent by type
+        handleAgent(CASTLE);
+        handleAgent(BARON);
+        handleAgent(WARRIOR);
+        handleAgent(VILLAGER);
+
+        // Show board and clan
+        showAsciiBoard();
+        showClanInfo();
+
+        // Select option before the end of turn
+        handleTurnCommands();
+
+        // Switch color to play with
+        switchTurn();
+    } while (!isEndGame()); // Check if is the end of the game
+
+    showWinner(getWinnner()->clan);
 }
 
-void initBoard() {
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            g_world.board[i][j].clan = FREE;
-            g_world.board[i][j].castle = NULL;
-            g_world.board[i][j].inhabitants = NULL;
-        }
-    }
-}
-
-void initAgent(Agent *agent, char clan, char type, Vector2 pos) {
-    pos = getFreeNextPos(pos);
-    agent->clan = clan;
-    agent->type = type;
-    agent->product = FREE;
-    agent->time = -1;
-    agent->pos = pos;
-    agent->dest = pos;
-    agent->nextAgent = NULL;
-    agent->prevAgent = NULL;
-    agent->nextNeighbor = NULL;
-    agent->prevNeighbor = NULL;
-}
-
-AList createClan(char clan, Vector2 pos) {
-    AList aList = createCastle(clan, pos);
-    addAgent(aList, clan, BARON);
-    addAgent(aList, clan, VILLAGER);
-    return aList;
-}
-
-AList createCastle(char clan, Vector2 pos) {
-    AList aList = malloc(sizeof(AList));
-    if (aList == NULL)
-        exit(EXIT_FAILURE);
-
-    Agent *castle = malloc(sizeof(Agent));
-    if (castle == NULL)
-        exit(EXIT_FAILURE);
-
-    initAgent(aList, clan, FREE, pos);
-    initAgent(castle, clan, CASTLE, pos);
-    setAgentOnBoard(castle);
-
-    aList->nextAgent = castle;
-    return aList;
-}
-
-void addAgent(AList aList, char clan, char type) {
-    Agent *agent = malloc(sizeof(Agent));
-    if (aList == NULL || agent == NULL || aList->nextAgent == NULL)
-        exit(EXIT_FAILURE);
-
-    Agent *castle = aList->nextAgent;
-    initAgent(agent, clan, type, castle->pos);
-    setAgentOnBoard(agent);
-
-    Agent *tail = aList->nextAgent;
-    while(tail->nextAgent != NULL) {
-        tail = tail->nextAgent;
-    }
-    tail->nextAgent = agent;
-}
-
-void setAgentOnBoard(Agent *agent) {
-    int row = agent->pos.y;
-    int col = agent->pos.x;
-    g_world.board[row][col].clan = agent->clan;
-    if (agent->type == CASTLE) {
-        g_world.board[row][col].castle = agent;
-    } else {
-        g_world.board[row][col].inhabitants = agent;
-    }
-}
-
-void moveAgent(Agent *agent) {
-    //TODO: Move
-    if (agent->type != CASTLE && hasDestination(agent) && canMove(agent->dest)) {
-        int deltaX = get_sign(agent->dest.x - agent->pos.x);
-        int deltaY = get_sign(agent->dest.y - agent->pos.y);
-//        g_world.board[agent->pos.y][agent->pos.x].inhabitants = NULL;
-        if (deltaX == 0) {
-            agent->pos.y += deltaY;
-        } else if (deltaY == 0) {
-            agent->pos.x += deltaX;
-        } else {
-            bool vector = get_random_boolean();
-            if (vector) {
-                agent->pos.x += deltaX;
+void handleAgent(char type) {
+    Agent *agent = g_world.current->nextAgent;
+    Agent *next = NULL;
+    while (agent != NULL) {
+        next = agent->nextAgent;
+        if (agent->type == type) {
+            if (hasDestination(agent)) {
+                moveAgent(agent);
             } else {
-                agent->pos.y += deltaY;
+                handleAgentCommands(agent);
             }
         }
-//        g_world.board[agent->pos.y][agent->pos.x].inhabitants = agent;
-    }
-}
-
-bool hasDestination(Agent *agent) {
-    return agent->dest.x != agent->pos.x || agent->dest.y != agent->pos.y;
-}
-
-Vector2 getFreeNextPos(Vector2 pos) {
-    Vector2 up = {pos.x, pos.y - 1};
-    Vector2 right = {pos.x + 1, pos.y};
-    Vector2 down = {pos.x, pos.y + 1};
-    Vector2 left = {pos.x - 1, pos.y};
-    if (canMove(pos))
-        return pos;
-    if (canMove(up))
-        return up;
-    if (canMove(right))
-        return right;
-    if (canMove(down))
-        return down;
-    if (canMove(left))
-        return left;
-    return pos;
-}
-
-bool canMove(Vector2 dest) {
-    return isOnBoard(dest) && isFreeCell(dest);
-}
-
-bool isFreeCell(Vector2 pos) {
-    return g_world.board[pos.y][pos.x].inhabitants == NULL;
-}
-
-bool isOnBoard(Vector2 pos) {
-    return pos.x >= 0 && pos.x < COLS && pos.y >= 0 && pos.y < ROWS;
-}
-
-int countAgentInList(AList aList, char type) {
-    return (aList != NULL && aList->type == type) ? 1 : 0;
-}
-
-AList  getRandomColor() {
-    return get_random_boolean() ? g_world.red : g_world.blue;
-}
-
-AList switchTurn(AList current) {
-    return (current == g_world.red) ? g_world.blue : g_world.red;
-}
-
-AList getWinnner() {
-    if (g_world.red->nextAgent == NULL) {
-        return g_world.blue;
-    }
-    if (g_world.blue->nextAgent == NULL) {
-        return g_world.red;
-    }
-    return NULL;
-}
-
-bool isEndGame(int cmd) {
-    return getWinnner() != NULL || cmd == CMD_QUIT;
-}
-
-void updateTurn(int count) {
-    if (count % 2 == 0) {
-        g_world.turn++;
-    }
-}
-
-int getTreasure(char clan) {
-    return (clan == RED) ? g_world.redTreasure : g_world.blueTreasure;
-}
-
-void spendTreasure(int cost, char clan) {
-    if (clan == RED) {
-        g_world.redTreasure -= cost;
-    } else if (clan == BLUE) {
-        g_world.blueTreasure -= cost;
-    }
-}
-
-int getAgentTimeBuild(char type) {
-    switch (type) {
-        case CASTLE:
-            return TIME_CASTLE;
-        case BARON:
-            return TIME_BARON;
-        case WARRIOR:
-            return TIME_WARRIOR;
-        case VILLAGER:
-            return TIME_VILLAGER;
-        default:
-            return -1;
-    }
-}
-
-int getAgentCost(char type) {
-    switch (type) {
-        case CASTLE:
-            return COST_CASTLE;
-        case BARON:
-            return COST_BARON;
-        case WARRIOR:
-            return COST_WARRIOR;
-        case VILLAGER:
-            return COST_VILLAGER;
-        default:
-            return -1;
-    }
-}
-
-bool canBuild(Agent *castle, char type) {
-    return castle->product == FREE && getTreasure(castle->clan) >= getAgentCost(type);
-}
-
-void buildAgent(Agent *castle, char type) {
-    if (canBuild(castle, type)) {
-        castle->product = type;
-        castle->time = getAgentTimeBuild(type);
-        spendTreasure(getAgentCost(type), castle->clan);
-    }
-}
-
-void updateBuild(AList aList) {
-    Agent *agent = aList->nextAgent;
-    while(agent != NULL) {
-        if (agent->product != FREE) {
-            agent->time--;
-            if (agent->time <= 0 && hasAvailableSpaceToBuild(agent->pos)) {
-                addAgent(aList, agent->clan, agent->product);
-                agent->product = FREE;
-            }
+        if (g_world.current->nextAgent == NULL) {
+            break;
         }
-        agent = agent->nextAgent;
+        agent = next;
     }
 }
 
-bool hasAvailableSpaceToBuild(Vector2 pos) {
-    Vector2 vector = getFreeNextPos(pos);
-    return g_world.board[vector.y][vector.x].inhabitants == NULL;
+void handleAgentCommands(Agent *agent) {
+    showAsciiBoard();
+    showClanInfo();
+    showAgent(agent);
+    printf("Your order?\n");
+    switch (agent->type) {
+        case CASTLE:
+            handleCastle(agent);
+            break;
+        case BARON:
+            handleBaron(agent);
+            break;
+        case WARRIOR:
+            handleWarrior(agent);
+            break;
+        case VILLAGER:
+            handleVillager(agent);
+            break;
+        default:
+            break;
+    }
 }
+
+void handleCastle(Agent *agent) {
+    showCastleCommands(agent);
+    switch (get_user_entry_interval(0, 4)) {
+        case 0:
+            // REMOVE
+            removeAgent(g_world.current, agent);
+            break;
+        case 1:
+            // NOTHING
+            break;
+        case 2:
+            // BUILD BARON
+            buildAgent(agent, BARON);
+            break;
+        case 3:
+            // BUILD WARRIOR
+            buildAgent(agent, WARRIOR);
+            break;
+        case 4:
+            // BUILD VILLAGER
+            buildAgent(agent, VILLAGER);
+            break;
+        default:
+            break;
+    }
+}
+
+void handleBaron(Agent *agent) {
+    showBaronCommands(agent);
+    switch (get_user_entry_interval(0, 3)) {
+        case 0:
+            // REMOVE
+            removeAgent(g_world.current, agent);
+            break;
+        case 1:
+            // NOTHING
+            break;
+        case 2:
+            // MOVE
+            agent->dest = getAgentNewDestCommands(agent);
+            moveAgent(agent);
+            break;
+        case 3:
+            // BUILD CASTLE
+            break;
+        default:
+            break;
+    }
+}
+
+void handleWarrior(Agent *agent) {
+    showWarriorCommands(agent);
+    switch (get_user_entry_interval(0, 2)) {
+        case 0:
+            // REMOVE
+            removeAgent(g_world.current, agent);
+            break;
+        case 1:
+            // NOTHING
+            break;
+        case 2:
+            // MOVE
+            agent->dest = getAgentNewDestCommands(agent);
+            moveAgent(agent);
+            break;
+        default:
+            break;
+    }
+}
+
+void handleVillager(Agent *agent) {
+    showVillagerCommands(agent);
+    switch (get_user_entry_interval(0, 4)) {
+        case 0:
+            // REMOVE
+            removeAgent(g_world.current, agent);
+            break;
+        case 1:
+            // NOTHING
+            break;
+        case 2:
+            // MOVE
+            agent->dest = getAgentNewDestCommands(agent);
+            moveAgent(agent);
+            break;
+        case 3:
+            // COLLECT
+            collect(agent);
+            break;
+        case 4:
+            // TAKE UP ARMS
+            takeUpArms(agent);
+            break;
+        default:
+            break;
+    }
+}
+
+void handleTurnCommands() {
+    showTurnCommands();
+    switch (get_user_entry_interval(1, 2)) {
+        case 1:
+            // END TURN = DO NOTHING
+            break;
+        case 2:
+            // QUIT GAME
+            exit(EXIT_SUCCESS);
+        default:
+            break;
+    }
+}
+
+void handleSaveLoad() {
+    showSaveCommands();
+    switch (get_user_entry_interval(1, 3)) {
+        case 1:
+            // CONTINUE
+            break;
+        case 2:
+            // SAVE
+            printf("\nEnter the name of the file to save: ");
+            save(get_user_entry(200));
+            printf("\nFile saved!");
+            break;
+        case 3:
+            // LOAD
+            printf("\nEnter the name of the file to load: ");
+            load(get_user_entry(200));
+            printf("\nFile loaded!");
+            break;
+        default:
+            break;
+    }
+}
+
+

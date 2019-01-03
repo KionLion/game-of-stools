@@ -2,17 +2,12 @@
 
 World g_world;
 
-void showAgentList(AList aList) {
-    if (aList == NULL)
-        exit(EXIT_FAILURE);
-    Agent *agent = aList->nextAgent;
-    while(agent != NULL) {
-        printf("{%c-%c(%d,%d)}\n", agent->clan, agent->type, agent->pos.x, agent->pos.y);
-        agent = agent->nextAgent;
-    }
-}
-
 void showAsciiBoard() {
+    printf("\n\n");
+    for (int j = 0; j < COLS; j++) {
+        printf("  %2d  ", j);
+    }
+    printf("\n");
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
             printf("------");
@@ -21,7 +16,7 @@ void showAsciiBoard() {
         for (int j = 0; j < COLS; j++) {
             showAsciiCell(g_world.board[i][j]);
         }
-        printf("|\n");
+        printf("| %d\n", i);
     }
     for (int j = 0; j < COLS; j++) {
         printf("------");
@@ -33,18 +28,20 @@ void showAsciiCell(Cell cell) {
     char string[] = "     ";
     if (cell.clan != FREE) {
         string[0] = cell.clan;
-        if (cell.castle != NULL){
-            string[1] = CASTLE;
-        }
-        string[2] = '0' + countAgentInList(cell.inhabitants, BARON);
-        string[3] = '0' + countAgentInList(cell.inhabitants, WARRIOR);
-        string[4] = '0' + countAgentInList(cell.inhabitants, VILLAGER);
+    }
+    if (cell.castle != NULL) {
+        string[1] = CASTLE;
+    }
+    if (cell.clan != FREE || cell.castle != NULL || cell.inhabitants != NULL) {
+        string[2] = parse_char(countAgentInList(cell.inhabitants, BARON));
+        string[3] = parse_char(countAgentInList(cell.inhabitants, WARRIOR));
+        string[4] = parse_char(countAgentInList(cell.inhabitants, VILLAGER));
     }
     printf("|%s", string);
 }
 
 void showAgent(Agent *agent) {
-    printf("\n");
+    printf("\n#");
     if (agent->clan == RED) {
         printf("Red ");
     } else if (agent->clan == BLUE) {
@@ -61,50 +58,40 @@ void showAgent(Agent *agent) {
     } else {
         printf("(NULL) ");
     }
-    printf("(%d, %d)", agent->pos.x, agent->pos.y);
-    printf("\n\n");
+    printf("(%d, %d). ", agent->pos.x, agent->pos.y);
 }
 
-void showClanInfo(AList aList) {
+void showClanInfo() {
     printf("\nTurn: %d", g_world.turn);
-    if (aList->clan == RED) {
+    if (g_world.current->clan == RED) {
         printf("\nPlayer: RED");
         printf("\nTreasure: %d", g_world.redTreasure);
-    } else if (aList->clan == BLUE) {
+    } else if (g_world.current->clan == BLUE) {
         printf("\nPlayer: BLUE");
         printf("\nTreasure: %d", g_world.blueTreasure);
     }
     printf("\n");
 }
 
-void showCommandAgent(AList aList, char type) {
-    Agent *agent = aList->nextAgent;
-    do {
-        if (agent->type == type) {
-            showAgent(agent);
-            printf("Your order?\n");
-            switch (type) {
-                case CASTLE:
-                    showCommandCastle(agent);
-                    break;
-                case BARON:
-                    showCommandBaron(agent);
-                    break;
-                case WARRIOR:
-                    showCommandWarrior(agent);
-                    break;
-                case VILLAGER:
-                    showCommandVillager(agent);
-                    break;
-                default:
-                    break;
-            }
+void showCastleCommands(Agent *agent) {
+    if (agent->product != FREE) {
+        printf("\n/!\\ ");
+        switch (agent->product) {
+            case BARON:
+                printf("Baron ");
+                break;
+            case WARRIOR:
+                printf("Warrior ");
+                break;
+            case VILLAGER:
+                printf("Villager ");
+                break;
+            default:
+                break;
         }
-        agent = agent->nextAgent;
-    } while (agent != NULL);
-}
-
-void showCommandCastle(Agent *agent) {
+        printf("arrive in %d turn(s).\n", agent->time);
+    }
+    printf("\n0 . Remove");
     printf("\n1 . Nothing");
     if (canBuild(agent, BARON))
         printf("\n2 . Build Baron (%d gold and %d turns)", COST_BARON, TIME_BARON);
@@ -113,115 +100,63 @@ void showCommandCastle(Agent *agent) {
     if (canBuild(agent, VILLAGER))
         printf("\n4 . Build Villager (%d gold and %d turns)", COST_VILLAGER, TIME_VILLAGER);
     printf("\n\n");
-    switch (get_user_entry_interval(1, 4)) {
-        case 1:
-            // NOTHING
-            break;
-        case 2:
-            buildAgent(agent, BARON);
-            break;
-        case 3:
-            buildAgent(agent, WARRIOR);
-            break;
-        case 4:
-            buildAgent(agent, VILLAGER);
-            break;
-        default:
-            // NOTHING
-            break;
-    }
 }
 
-void showCommandBaron(Agent *agent) {
+void showBaronCommands(Agent *agent) {
+    printf("\n0 . Remove");
     printf("\n1 . Nothing");
     printf("\n2 . New Destination");
     printf("\n3 . Build Castle (%d gold and %d turns)", COST_CASTLE, TIME_CASTLE);
-    printf("\n4 . Remove");
     printf("\n\n");
-    switch (get_user_entry_interval(1, 4)) {
-        case 1:
-            //CMD_END_TURN;
-            break;
-        case 2:
-            //CMD_END_TURN;
-            break;
-        case 3:
-            //CMD_END_TURN;
-            break;
-        case 4:
-            //CMD_END_TURN;
-            break;
-        default:
-            //CMD_VOID;
-            break;
-    }
 }
 
-void showCommandWarrior(Agent *agent) {
+void showWarriorCommands(Agent *agent) {
+    printf("\n0 . Remove");
     printf("\n1 . Nothing");
     printf("\n2 . New Destination");
-    printf("\n3 . Claim");
-    printf("\n4 . Remove");
     printf("\n\n");
-    switch (get_user_entry_interval(1, 5)) {
-        case 1:
-            //CMD_END_TURN;
-            break;
-        case 2:
-            //CMD_END_TURN;
-            break;
-        case 3:
-            //CMD_END_TURN;
-            break;
-        case 4:
-            //CMD_END_TURN;
-            break;
-        default:
-            //CMD_VOID;
-            break;
-    }
 }
 
-void showCommandVillager(Agent *agent) {
+void showVillagerCommands(Agent *agent) {
+    printf("\n0 . Remove");
     printf("\n1 . Nothing");
     printf("\n2 . New Destination");
-    printf("\n3 . Collect");
-    printf("\n4 . Take Up Arms (%d gold)", COST_WARRIOR);
-    printf("\n5 . Remove");
+    if (canCollect(agent))
+        printf("\n3 . Collect");
+    if (canBuild(agent, WARRIOR))
+        printf("\n4 . Take Up Arms (%d gold)", COST_WARRIOR);
     printf("\n\n");
-    switch (get_user_entry_interval(1, 5)) {
-        case 1:
-            //CMD_END_TURN;
-            break;
-        case 2:
-            //CMD_END_TURN;
-            break;
-        case 3:
-            //CMD_END_TURN;
-            break;
-        case 4:
-            //CMD_END_TURN;
-            break;
-        case 5:
-            //CMD_END_TURN;
-            break;
-        default:
-            //CMD_VOID;
-            break;
-    }
 }
 
-int showCommandTurn() {
-    printf("End your turn?\n");
+void showTurnCommands() {
+    printf("\nEnd your turn?\n");
     printf("\n1 . End Turn");
-    printf("\n4 . Quit");
+    printf("\n2 . Quit");
     printf("\n\n");
-    switch (get_user_entry_interval(1, 2)) {
-        case 1:
-            return CMD_END_TURN;
-        case 2:
-            return CMD_QUIT;
-        default:
-            return CMD_END_TURN;
+}
+
+void showSaveCommands() {
+    printf("\n1 . Continue");
+    printf("\n2 . Save");
+    printf("\n3 . Load");
+    printf("\n\n");
+}
+
+Vector2 getAgentNewDestCommands(Agent *agent) {
+    printf("\nEnter new X position (current: %d): ", agent->dest.x);
+    int x = get_user_entry_interval(0, COLS - 1);
+    printf("\nEnter new Y position (current: %d): ", agent->dest.y);
+    int y = get_user_entry_interval(0, ROWS - 1);
+    printf("\n");
+    return (Vector2) {x, y};
+}
+
+void showWinner(char clan) {
+    printf("\n\n*********************\n");
+    if (clan == RED) {
+        printf("*   WINNER IS RED   *");
+    } else if (clan == BLUE) {
+        printf("*   WINNER IS BLUE  *");
     }
+    printf("\n*********************\n\n");
 }
