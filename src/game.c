@@ -11,16 +11,12 @@ void play() {
     do {
         // Update turn and builds
         updateTurn(count++);
-        updateBuild(g_world.current);
 
         // Handle save / load
         handleSaveLoad();
 
-        // Handle agent by type
-        handleAgent(CASTLE);
-        handleAgent(BARON);
-        handleAgent(WARRIOR);
-        handleAgent(VILLAGER);
+        // Handle all agents by castle
+        handleAgents();
 
         // Show board and clan
         showAsciiBoard();
@@ -36,12 +32,24 @@ void play() {
     showWinner(getWinnner()->clan);
 }
 
-void handleAgent(char type) {
-    Agent *agent = g_world.current->nextAgent;
+void handleAgents() {
+    Agent *castle = g_world.current->nextAgent;
+    while (castle != NULL) {
+        handleAgentByCastle(castle, CASTLE);
+        handleAgentByCastle(castle, BARON);
+        handleAgentByCastle(castle, WARRIOR);
+        handleAgentByCastle(castle, VILLAGER);
+        castle = castle->nextNeighbor;
+    }
+}
+
+void handleAgentByCastle(Agent *castle, char type) {
+    Agent *agent = castle;
     Agent *next = NULL;
     while (agent != NULL) {
         next = agent->nextAgent;
         if (agent->type == type) {
+            updateBuild(castle, agent);
             if (hasDestination(agent)) {
                 moveAgent(agent);
             } else {
@@ -83,7 +91,7 @@ void handleCastle(Agent *agent) {
     switch (get_user_entry_interval(0, 4)) {
         case 0:
             // REMOVE
-            removeAgent(g_world.current, agent);
+            removeCastle(agent);
             break;
         case 1:
             // NOTHING
@@ -110,7 +118,7 @@ void handleBaron(Agent *agent) {
     switch (get_user_entry_interval(0, 3)) {
         case 0:
             // REMOVE
-            removeAgent(g_world.current, agent);
+            removeAgent(agent);
             break;
         case 1:
             // NOTHING
@@ -122,6 +130,7 @@ void handleBaron(Agent *agent) {
             break;
         case 3:
             // BUILD CASTLE
+            buildAgent(agent, CASTLE);
             break;
         default:
             break;
@@ -133,7 +142,7 @@ void handleWarrior(Agent *agent) {
     switch (get_user_entry_interval(0, 2)) {
         case 0:
             // REMOVE
-            removeAgent(g_world.current, agent);
+            removeAgent(agent);
             break;
         case 1:
             // NOTHING
@@ -153,7 +162,7 @@ void handleVillager(Agent *agent) {
     switch (get_user_entry_interval(0, 4)) {
         case 0:
             // REMOVE
-            removeAgent(g_world.current, agent);
+            removeAgent(agent);
             break;
         case 1:
             // NOTHING

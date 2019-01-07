@@ -5,8 +5,8 @@ void initWorld() {
     g_world.turn = 0;
     g_world.redTreasure = INIT_TEASURE;
     g_world.blueTreasure = INIT_TEASURE;
-    g_world.red = createClan(RED, (Vector2){0, 0});
-    g_world.blue = createClan(BLUE, (Vector2){COLS - 1, ROWS - 1});
+    g_world.red = createClan(RED, INIT_RED_POS, INIT_CLAN);
+    g_world.blue = createClan(BLUE, INIT_BLUE_POS, INIT_CLAN);
     g_world.current = NULL;
 }
 
@@ -34,68 +34,79 @@ void initAgent(Agent *agent, char clan, char type, Vector2 pos) {
     agent->prevNeighbor = NULL;
 }
 
-AList createClan(char clan, Vector2 pos) {
-    AList aList = createCastle(clan, pos);
-    addAgent(aList, clan, BARON, pos);
-    addAgent(aList, clan, VILLAGER, pos);
-    return aList;
-}
-
-AList createCastle(char clan, Vector2 pos) {
-    AList aList = malloc(sizeof(AList));
+AList createClan(char clan, Vector2 pos, char *agents) {
+    AList aList = malloc(sizeof(Agent));
     if (aList == NULL)
         exit(EXIT_FAILURE);
 
-    Agent *castle = malloc(sizeof(Agent));
-    if (castle == NULL)
-        exit(EXIT_FAILURE);
-
     initAgent(aList, clan, FREE, pos);
-    initAgent(castle, clan, CASTLE, pos);
-    addAgentOnBoard(castle);
 
-    aList->nextAgent = castle;
+    addAgent(aList, clan, CASTLE, pos);
+    if (agents != NULL) {
+        for (int i = 0; agents[i] != 0; ++i) {
+            addAgent(aList, clan, agents[i], pos);
+        }
+    }
     return aList;
 }
 
 Agent *addAgent(AList aList, char clan, char type, Vector2 pos) {
     Agent *agent = malloc(sizeof(Agent));
-    if (aList == NULL || agent == NULL || aList->nextAgent == NULL)
+    if (aList == NULL || agent == NULL)
         exit(EXIT_FAILURE);
 
     initAgent(agent, clan, type, pos);
     addAgentOnBoard(agent);
 
     Agent *next = aList->nextAgent;
-    while(next->nextAgent != NULL) {
-        next = next->nextAgent;
+    if (next == NULL) {
+        aList->nextAgent = agent;
+    } else {
+        while(next->nextAgent != NULL) {
+            next = next->nextAgent;
+        }
+        next->nextAgent = agent;
     }
-    next->nextAgent = agent;
     return agent;
 }
 
-void removeAgent(AList aList, Agent *agent) {
-    Agent *current = aList->nextAgent;
+Agent *addCastle(AList aList, char clan, Vector2 pos) {
+    Agent *castle = malloc(sizeof(Agent));
+    if (aList == NULL || castle == NULL || aList->nextAgent == NULL)
+        exit(EXIT_FAILURE);
+
+    initAgent(castle, clan, CASTLE, pos);
+    addAgentOnBoard(castle);
+
+    Agent *next = aList->nextAgent;
+    while(next->nextNeighbor != NULL) {
+        next = next->nextNeighbor;
+    }
+    next->nextNeighbor = castle;
+    return castle;
+}
+
+void removeAgent(Agent *agent) {
+    Agent *prev = searchPreviousAgent(agent);
+    if (prev != NULL) {
+        prev->nextAgent = agent->nextAgent;
+        removeAgentOnBoard(agent);
+        free(agent);
+    }
+}
+
+void removeCastle(Agent *castle) {
+    Agent *current = g_world.current->nextAgent;
     Agent *next = NULL;
-    if (agent->type == CASTLE) { // Delete all agents belong to castle
+    if (castle->type == CASTLE) {
+        // Delete all agents belong to castle
         while (current != NULL) {
             removeAgentOnBoard(current);
             next = current->nextAgent;
             free(current);
             current = next;
         }
-        aList->nextAgent = NULL;
-    } else {
-        next = aList->nextAgent;
-        while (next->nextAgent != NULL && agent != next) { // Search and delete
-            current = next;
-            next = next->nextAgent;
-        }
-        if (agent == next) {
-            removeAgentOnBoard(agent);
-            current->nextAgent = agent->nextAgent;
-            free(agent);
-        }
+        g_world.current->nextAgent = NULL;
     }
 }
 
@@ -144,7 +155,7 @@ bool canMove(Vector2 dest) {
 
 bool isFreeCell(Vector2 pos) {
     return g_world.board[pos.y][pos.x].inhabitants == NULL
-        && g_world.board[pos.y][pos.x].castle == NULL;
+           && g_world.board[pos.y][pos.x].castle == NULL;
 }
 
 bool isOnBoard(Vector2 pos) {
@@ -225,29 +236,32 @@ int getAgentCost(char type) {
     }
 }
 
-bool canBuild(Agent *castle, char type) {
-    return castle->product == FREE && getTreasure(castle->clan) >= getAgentCost(type);
+bool canBuild(Agent *agent, char type) {
+    return agent->product == FREE && getTreasure(agent->clan) >= getAgentCost(type);
 }
 
-void buildAgent(Agent *castle, char type) {
-    if (canBuild(castle, type)) {
-        castle->product = type;
-        castle->time = getAgentTimeBuild(type);
-        spendTreasure(getAgentCost(type), castle->clan);
+void buildAgent(Agent *agent, char type) {
+    if (canBuild(agent, type)) {
+        agent->product = type;
+        agent->time = getAgentTimeBuild(type);
+        spendTreasure(getAgentCost(type), agent->clan);
     }
 }
 
-void updateBuild(AList aList) {
-    Agent *agent = aList->nextAgent;
-    while(agent != NULL) {
-        if (agent->product != FREE) {
-            agent->time--;
-            if (agent->time <= 0 && hasAvailableSpaceToBuild(agent->pos)) {
-                addAgent(aList, agent->clan, agent->product, agent->pos);
+void updateBuild(Agent *castle, Agent *agent) {
+    if (agent->product != FREE) {
+        agent->time--;
+        if (agent->time <= 0) {
+            if (agent->product == CASTLE) {
+                Agent *newCastle = addCastle(g_world.current, agent->clan, agent->pos);
+                changeLoyaltyToCastle(newCastle, agent);
+                agent->product = FREE;
+            } else if (hasAvailableSpaceToBuild(agent->pos)) {
+                addAgent(castle, agent->clan, agent->product, agent->pos);
                 agent->product = FREE;
             }
+            agent->time = 0;
         }
-        agent = agent->nextAgent;
     }
 }
 
@@ -306,7 +320,7 @@ bool hasDestination(Agent *agent) {
 
 bool canCollect(Agent *agent) {
     return agent->type == VILLAGER
-    && g_world.board[agent->pos.y][agent->pos.x].clan == agent->clan;
+           && g_world.board[agent->pos.y][agent->pos.x].clan == agent->clan;
 }
 
 void collect(Agent *agent) {
@@ -323,6 +337,7 @@ void takeUpArms(Agent *agent) {
     if (agent->type == VILLAGER && canBuild(agent, WARRIOR)) {
         spendTreasure(getAgentCost(WARRIOR), agent->clan);
         agent->type = WARRIOR;
+        claim(agent);
     }
 }
 
@@ -390,7 +405,7 @@ void load(char *filename) {
     loadBoardFromData(lines[length - 1]);
 
     for (int i = 4; i < length - 1; i += 6) {
-       loadAgentFromData(lines, i);
+        loadAgentFromData(lines, i);
     }
 
     // Clear lines
@@ -424,7 +439,7 @@ void loadAgentFromData(char **data, int i) {
     AList list;
     Agent *agent;
     if (type == CASTLE) {
-        list = createCastle(clan, pos);
+        list = createClan(clan, pos, NULL);
         agent = list->nextAgent;
     } else {
         list = (clan == RED) ? g_world.red : g_world.blue;
@@ -442,4 +457,35 @@ void loadAgentFromData(char **data, int i) {
     } else if (clan == BLUE) {
         g_world.blue = list;
     }
+}
+
+Agent *searchPreviousAgentLinkToCastle(Agent *castle, Agent *agent) {
+    Agent *current = castle;
+    Agent *next = castle->nextAgent;
+    while (next != NULL && next != agent) {
+        current = next;
+        next = next->nextAgent;
+    }
+    return next == agent ? current : NULL;
+}
+
+Agent *searchPreviousAgent(Agent *agent) {
+    Agent *castle = g_world.current->nextAgent;
+    Agent *current = NULL;
+    while (castle != NULL && current == NULL) {
+        current = searchPreviousAgentLinkToCastle(castle, agent);
+        castle = castle->nextNeighbor;
+    }
+    return current;
+}
+
+void changeLoyaltyToCastle(Agent *castle, Agent *agent) {
+    // Remove agent from the global list
+    Agent *prev = searchPreviousAgent(agent);
+    prev->nextAgent = agent->nextAgent;
+    agent->nextAgent = NULL;
+
+    // Get the last agent from a specific castle list and add agent at the end
+    prev = searchPreviousAgentLinkToCastle(castle, NULL);
+    prev->nextAgent = agent;
 }

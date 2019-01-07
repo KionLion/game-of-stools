@@ -22,8 +22,11 @@
 // Play game
 void play();
 
-// Handle agent on browsing agent list
-void handleAgent(char type);
+// Handle all agents by castle
+void handleAgents();
+
+// Handle agent on browsing agent list by castle
+void handleAgentByCastle(Agent *castle, char type);
 
 // Handle agent commands
 void handleAgentCommands(Agent *agent);

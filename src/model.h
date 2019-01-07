@@ -32,6 +32,9 @@
 #define COST_BARON 10
 #define COST_CASTLE 30
 
+#define INIT_RED_POS (Vector2){0, 0}
+#define INIT_BLUE_POS (Vector2){COLS - 1, ROWS - 1}
+#define INIT_CLAN "BV"
 #define INIT_TEASURE 50
 
 #define VILLAGER_COLLECT_VALUE 1
@@ -84,16 +87,19 @@ void initBoard();
 void initAgent(Agent *agent, char clan, char type, Vector2 pos);
 
 // Create a clan at position
-AList createClan(char clan, Vector2 pos);
+AList createClan(char clan, Vector2 pos, char *agents);
 
-// Create a castle at position
-AList createCastle(char clan, Vector2 pos);
-
-// Add one agent to the list of agent
+// Add one agent to the list using nextAgent
 Agent *addAgent(AList aList, char clan, char type, Vector2 pos);
 
-// Remove agent in the list of agent or all list if agent is a castle
-void removeAgent(AList aList, Agent *agent);
+// Add one castle to the list using nextNeighbor
+Agent *addCastle(AList aList, char clan, Vector2 pos);
+
+// Remove an agent from list and board
+void removeAgent(Agent *agent);
+
+// Remove castle and all agents that belong to him
+void removeCastle(Agent *agent);
 
 // Add an agent to the board
 void addAgentOnBoard(Agent *agent);
@@ -149,8 +155,8 @@ bool canBuild(Agent *castle, char type);
 // Build an agent type into castle
 void buildAgent(Agent *castle, char type);
 
-// Update build from current player list
-void updateBuild(AList aList);
+// Update build of an agent from castle list
+void updateBuild(Agent *castle, Agent *agent);
 
 // Check if there is enough space to build around the position
 bool hasAvailableSpaceToBuild(Vector2 pos);
@@ -193,5 +199,14 @@ void loadBoardFromData(char *data);
 
 // Initialize agents from data
 void loadAgentFromData(char **data, int i);
+
+// Search previous agent link to castle
+Agent *searchPreviousAgentLinkToCastle(Agent *castle, Agent *agent);
+
+// Search previous agent from list
+Agent *searchPreviousAgent(Agent *agent);
+
+// Change loyalty to another castle
+void changeLoyaltyToCastle(Agent *castle, Agent *agent);
 
 #endif //GAME_OF_STOOLS_MODEL_H
