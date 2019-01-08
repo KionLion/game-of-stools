@@ -10,8 +10,8 @@
 
 /* CONSTANTS */
 
-#define COLS 3
-#define ROWS 3
+#define COLS 18
+#define ROWS 12
 
 #define RED 'R'
 #define BLUE 'B'

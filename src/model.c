@@ -5,8 +5,8 @@ void initWorld() {
     g_world.turn = 0;
     g_world.redTreasure = INIT_TEASURE;
     g_world.blueTreasure = INIT_TEASURE;
-    g_world.red = createClan(RED, INIT_RED_POS, INIT_CLAN);
-    g_world.blue = createClan(BLUE, INIT_BLUE_POS, INIT_CLAN);
+    g_world.red = NULL;
+    g_world.blue = NULL;
     g_world.current = NULL;
 }
 
@@ -383,12 +383,17 @@ void save(char *filename) {
 }
 
 void appendAgentData(AList aList, char data[]) {
-    Agent *agent = aList->nextAgent;
-    while(agent != NULL) {
-        sprintf(data, "%s%c%c%c %d %d %d %d %d \n", data,
-                agent->clan, agent->type, agent->product == FREE ? FREE_CHAR_IN_FILE : agent->product,
-                agent->time, agent->pos.x, agent->pos.y, agent->dest.x, agent->pos.y);
-        agent = agent->nextAgent;
+    Agent *castle = aList->nextAgent;
+    Agent *agent = NULL;
+    while (castle != NULL) {
+        agent = castle;
+        while(agent != NULL) {
+            sprintf(data, "%s%c%c%c %d %d %d %d %d \n", data,
+                    agent->clan, agent->type, agent->product == FREE ? FREE_CHAR_IN_FILE : agent->product,
+                    agent->time, agent->pos.x, agent->pos.y, agent->dest.x, agent->pos.y);
+            agent = agent->nextAgent;
+        }
+        castle = castle->nextNeighbor;
     }
 }
 
@@ -411,16 +416,6 @@ void load(char *filename) {
     if (lines == NULL)
         exit(EXIT_FAILURE);
 
-    g_world.current = lines[0][0] == RED ? g_world.red : g_world.blue;
-    g_world.turn = parse_int(lines[1]);
-    if (g_world.current->clan == RED) {
-        g_world.redTreasure = parse_int(lines[2]);
-        g_world.blueTreasure = parse_int(lines[3]);
-    } else {
-        g_world.blueTreasure = parse_int(lines[2]);
-        g_world.redTreasure = parse_int(lines[3]);
-    }
-
     // Get the length of the array
     int length;
     for (length = 0; lines[length]; length++);
@@ -429,6 +424,17 @@ void load(char *filename) {
 
     for (int i = 4; i < length - 1; i += 6) {
         loadAgentFromData(lines, i);
+    }
+
+    g_world.turn = parse_int(lines[1]);
+    if (lines[0][0] == RED) {
+        g_world.current = g_world.red;
+        g_world.redTreasure = parse_int(lines[2]);
+        g_world.blueTreasure = parse_int(lines[3]);
+    } else {
+        g_world.current = g_world.blue;
+        g_world.blueTreasure = parse_int(lines[2]);
+        g_world.redTreasure = parse_int(lines[3]);
     }
 
     // Clear lines
@@ -459,14 +465,20 @@ void loadAgentFromData(char **data, int i) {
     Vector2 pos = {parse_int(data[i + 2]), parse_int(data[i + 3])};
     Vector2 dest = {parse_int(data[i + 4]), parse_int(data[i + 5])};
 
-    AList list;
+    AList list = (clan == RED) ? g_world.red : g_world.blue;
     Agent *agent;
-    if (type == CASTLE) {
+    if (list == NULL) {
         list = createClan(clan, pos, NULL);
         agent = list->nextAgent;
+        if (clan == RED)
+            g_world.red = list;
+        else
+            g_world.blue = list;
+    } else if (type == CASTLE) {
+        agent = addCastle(list, clan, pos);
     } else {
-        list = (clan == RED) ? g_world.red : g_world.blue;
-        agent = addAgent(list, clan, type, pos);
+        Agent *castle = getCastleListTail(list);
+        agent = addAgent(castle, clan, type, pos);
     }
     agent->product = product;
     if (product == FREE_CHAR_IN_FILE)
@@ -474,12 +486,6 @@ void loadAgentFromData(char **data, int i) {
     agent->time = time;
     agent->pos = pos;
     agent->dest = dest;
-
-    if (clan == RED) {
-        g_world.red = list;
-    } else if (clan == BLUE) {
-        g_world.blue = list;
-    }
 }
 
 Agent *getAgentListTail(AList aList) {
@@ -546,6 +552,8 @@ void battle(Agent *conqueror, Vector2 pos) {
     }
     if (cell.castle != NULL && conqueror != NULL) {
         removeCastle(cell.castle, conqueror);
+        conqueror->pos = pos;
+        addAgentOnBoard(conqueror);
     }
 }
 

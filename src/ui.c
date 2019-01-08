@@ -141,10 +141,15 @@ void showTurnCommands() {
     printf("\n\n");
 }
 
-void showSaveCommands() {
-    printf("\n1 . Continue");
-    printf("\n2 . Save");
-    printf("\n3 . Load");
+void showGameCommands() {
+    if (g_world.current == NULL)
+        printf("\n1 . New Game");
+    else
+        printf("\n1 . Continue");
+    printf("\n2 . Load");
+    if (g_world.current != NULL) {
+        printf("\n3 . Save");
+    }
     printf("\n\n");
 }
 

@@ -55,7 +55,7 @@ bool clean_stdin() {
 }
 
 void write_file(char *filepath, char *data) {
-    FILE *f = fopen(filepath, "w");
+    FILE *f = fopen(filepath, "w+");
     if (f == NULL) {
         perror("Error opening file!\n");
         exit(EXIT_FAILURE);

@@ -5,15 +5,14 @@ World g_world;
 void play() {
     // Init global world variable
     initWorld();
-    // Set a random player to start
-    setRandomPlayer();
+
     int count = 0;
     do {
         // Update turn and builds
         updateTurn(count++);
 
-        // Handle save / load
-        handleSaveLoad();
+        // Handle game, save and load
+        handleGame();
 
         // Handle all agents by castle
         handleAgents();
@@ -202,23 +201,29 @@ void handleTurnCommands() {
     }
 }
 
-void handleSaveLoad() {
-    showSaveCommands();
+void handleGame() {
+    showGameCommands();
     switch (get_user_entry_interval(1, 3)) {
         case 1:
+            // NEW GAME
+            if (g_world.current == NULL) {
+                g_world.red = createClan(RED, INIT_RED_POS, INIT_CLAN);
+                g_world.blue = createClan(BLUE, INIT_BLUE_POS, INIT_CLAN);
+                setRandomPlayer(); // Set a random player to start
+            }
             // CONTINUE
             break;
         case 2:
-            // SAVE
-            printf("\nEnter the name of the file to save: ");
-            save(get_user_entry(200));
-            printf("\nFile saved!");
-            break;
-        case 3:
             // LOAD
             printf("\nEnter the name of the file to load: ");
             load(get_user_entry(200));
             printf("\nFile loaded!");
+            break;
+        case 3:
+            // SAVE
+            printf("\nEnter the name of the file to save: ");
+            save(get_user_entry(200));
+            printf("\nFile saved!");
             break;
         default:
             break;
