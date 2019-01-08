@@ -29,6 +29,12 @@ void showAsciiCell(Cell cell) {
     if (cell.clan != FREE) {
         string[0] = cell.clan;
     }
+    if (cell.inhabitants != NULL) {
+        string[0] = cell.inhabitants->clan;
+    }
+    if (cell.castle != NULL) {
+        string[0] = cell.castle->clan;
+    }
     if (cell.castle != NULL) {
         string[1] = CASTLE;
     }

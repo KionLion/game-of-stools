@@ -29,7 +29,7 @@
 
 #define COST_VILLAGER 1
 #define COST_WARRIOR 5
-#define COST_BARON 10
+#define COST_BARON 20
 #define COST_CASTLE 30
 
 #define INIT_RED_POS (Vector2){0, 0}
@@ -111,7 +111,10 @@ void removeAgentOnBoard(Agent *agent);
 Vector2 getFreeNextPos(Vector2 pos);
 
 // Check if the destination can be reached by an agent
-bool canMove(Vector2 dest);
+bool canMove(Vector2 pos, char type);
+
+// Check if the cell at pos there are enemies (castle or agent)
+bool isEnemy(Vector2 pos);
 
 // Check if the cell at position is free (no agent)
 bool isFreeCell(Vector2 pos);
@@ -208,5 +211,8 @@ Agent *searchPreviousAgent(Agent *agent);
 
 // Change loyalty to another castle
 void changeLoyaltyToCastle(Agent *castle, Agent *agent);
+
+// Handle battle
+void battle(Agent *agent, Vector2 pos);
 
 #endif //GAME_OF_STOOLS_MODEL_H

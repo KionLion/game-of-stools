@@ -92,6 +92,7 @@ void removeAgent(Agent *agent) {
         prev->nextAgent = agent->nextAgent;
         removeAgentOnBoard(agent);
         free(agent);
+        agent = NULL;
     }
 }
 
@@ -136,25 +137,32 @@ Vector2 getFreeNextPos(Vector2 pos) {
     Vector2 right = {pos.x + 1, pos.y};
     Vector2 down = {pos.x, pos.y + 1};
     Vector2 left = {pos.x - 1, pos.y};
-    if (canMove(pos))
+    if (isFreeCell(pos))
         return pos;
-    if (canMove(up))
+    if (isFreeCell(up))
         return up;
-    if (canMove(right))
+    if (isFreeCell(right))
         return right;
-    if (canMove(down))
+    if (isFreeCell(down))
         return down;
-    if (canMove(left))
+    if (isFreeCell(left))
         return left;
     return pos;
 }
 
-bool canMove(Vector2 dest) {
-    return isOnBoard(dest) && isFreeCell(dest);
+bool canMove(Vector2 pos, char type) {
+    return isOnBoard(pos) && !(isEnemy(pos) && type == VILLAGER);
+}
+
+bool isEnemy(Vector2 pos) {
+    Agent *agent = g_world.board[pos.y][pos.x].inhabitants;
+    Agent *castle = g_world.board[pos.y][pos.x].castle;
+    return (agent != NULL && g_world.current->clan != agent->clan)
+           || (castle != NULL && g_world.current->clan != castle->clan);
 }
 
 bool isFreeCell(Vector2 pos) {
-    return g_world.board[pos.y][pos.x].inhabitants == NULL
+    return isOnBoard(pos) && g_world.board[pos.y][pos.x].inhabitants == NULL
            && g_world.board[pos.y][pos.x].castle == NULL;
 }
 
@@ -273,8 +281,13 @@ bool hasAvailableSpaceToBuild(Vector2 pos) {
 void moveAgent(Agent *agent) {
     if (agent->type != CASTLE) {
         removeAgentOnBoard(agent);
-        agent->pos = getDirectionOnMove(agent);
-        addAgentOnBoard(agent);
+        Vector2 newPos = getDirectionOnMove(agent);
+        if (isEnemy(newPos)) {
+            battle(agent, newPos);
+        } else {
+            agent->pos = newPos;
+            addAgentOnBoard(agent);
+        }
     }
     if (agent->type == WARRIOR) {
         claim(agent);
@@ -288,15 +301,11 @@ Vector2 getDirectionOnMove(Agent *agent) {
     };
     Vector2 nextPosOnX = (Vector2) {agent->pos.x + direction.x, agent->pos.y};
     Vector2 nextPosOnY = (Vector2) {agent->pos.x, agent->pos.y + direction.y};
-    bool canMoveOnX = direction.x != 0 && canMove(nextPosOnX);
-    bool canMoveOnY = direction.y != 0 && canMove(nextPosOnY);
+    bool canMoveOnY = direction.y != 0 && canMove(nextPosOnY, agent->type);
+    bool canMoveOnX = direction.x != 0 && canMove(nextPosOnX, agent->type);
 
     if (canMoveOnX && canMoveOnY) {
-        if (get_random_boolean()) {
-            return nextPosOnX;
-        } else {
-            return nextPosOnY;
-        }
+        return get_random_boolean() ? nextPosOnX : nextPosOnY;
     } else if (canMoveOnX) {
         return nextPosOnX;
     } else if (canMoveOnY) {
@@ -488,4 +497,24 @@ void changeLoyaltyToCastle(Agent *castle, Agent *agent) {
     // Get the last agent from a specific castle list and add agent at the end
     prev = searchPreviousAgentLinkToCastle(castle, NULL);
     prev->nextAgent = agent;
+}
+
+void battle(Agent *agent, Vector2 pos) {
+    Cell cell = g_world.board[pos.y][pos.x];
+    if (cell.inhabitants != NULL) {
+        int result = getAgentCost(agent->type) * get_random_integer(0, 100);
+        result -= getAgentCost(cell.inhabitants->type) * get_random_integer(0, 100);
+        if (result >= 0 || cell.inhabitants->type == VILLAGER) {
+            removeAgent(cell.inhabitants);
+            agent->pos = pos;
+            addAgentOnBoard(agent);
+        }
+        if (result <= 0 && cell.inhabitants->type != VILLAGER) {
+            removeAgent(agent);
+            agent = NULL;
+        }
+    }
+    if (cell.castle != NULL && agent != NULL) {
+        removeCastle(cell.castle); //TODO: change loyalty villager to castle's agent
+    }
 }
