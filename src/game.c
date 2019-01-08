@@ -34,30 +34,29 @@ void play() {
 
 void handleAgents() {
     Agent *castle = g_world.current->nextAgent;
+    Agent *next = NULL;
     while (castle != NULL) {
+        next = castle->nextNeighbor;
         handleAgentByCastle(castle, CASTLE);
         handleAgentByCastle(castle, BARON);
         handleAgentByCastle(castle, WARRIOR);
         handleAgentByCastle(castle, VILLAGER);
-        castle = castle->nextNeighbor;
+        castle = next;
     }
 }
 
 void handleAgentByCastle(Agent *castle, char type) {
     Agent *agent = castle;
     Agent *next = NULL;
-    while (agent != NULL) {
+    while (agent != NULL && !isAgentFreed(agent)) { // Because of the free pointer method on remove agent
         next = agent->nextAgent;
         if (agent->type == type) {
-            updateBuild(castle, agent);
             if (hasDestination(agent)) {
                 moveAgent(agent);
             } else {
                 handleAgentCommands(agent);
             }
-        }
-        if (g_world.current->nextAgent == NULL) {
-            break;
+            updateBuild(castle, agent);
         }
         agent = next;
     }
@@ -91,7 +90,11 @@ void handleCastle(Agent *agent) {
     switch (get_user_entry_interval(0, 4)) {
         case 0:
             // REMOVE
-            removeCastle(agent);
+            if (g_world.current == g_world.red) {
+                removeCastle(agent, g_world.blue->nextAgent);
+            } else {
+                removeCastle(agent, g_world.red->nextAgent);
+            }
             break;
         case 1:
             // NOTHING

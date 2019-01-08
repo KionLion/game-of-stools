@@ -58,15 +58,10 @@ Agent *addAgent(AList aList, char clan, char type, Vector2 pos) {
     initAgent(agent, clan, type, pos);
     addAgentOnBoard(agent);
 
-    Agent *next = aList->nextAgent;
-    if (next == NULL) {
-        aList->nextAgent = agent;
-    } else {
-        while(next->nextAgent != NULL) {
-            next = next->nextAgent;
-        }
-        next->nextAgent = agent;
-    }
+    Agent *tail = getAgentListTail(aList);
+    tail->nextAgent = agent;
+    agent->prevAgent = tail;
+
     return agent;
 }
 
@@ -78,36 +73,55 @@ Agent *addCastle(AList aList, char clan, Vector2 pos) {
     initAgent(castle, clan, CASTLE, pos);
     addAgentOnBoard(castle);
 
-    Agent *next = aList->nextAgent;
-    while(next->nextNeighbor != NULL) {
-        next = next->nextNeighbor;
+    Agent *tail = getCastleListTail(aList);
+    if (tail == aList) {
+        aList->nextAgent = castle;
+        castle->prevAgent = aList;
     }
-    next->nextNeighbor = castle;
+    tail->nextNeighbor = castle;
+    castle->prevNeighbor = tail;
+
     return castle;
 }
 
 void removeAgent(Agent *agent) {
-    Agent *prev = searchPreviousAgent(agent);
-    if (prev != NULL) {
-        prev->nextAgent = agent->nextAgent;
-        removeAgentOnBoard(agent);
-        free(agent);
-        agent = NULL;
+    if (agent->prevAgent != NULL) {
+        agent->prevAgent->nextAgent = agent->nextAgent;
     }
+    if (agent->nextAgent != NULL) {
+        agent->nextAgent->prevAgent = agent->prevAgent;
+    }
+    removeAgentOnBoard(agent);
+    free(agent);
 }
 
-void removeCastle(Agent *castle) {
-    Agent *current = g_world.current->nextAgent;
-    Agent *next = NULL;
-    if (castle->type == CASTLE) {
-        // Delete all agents belong to castle
-        while (current != NULL) {
-            removeAgentOnBoard(current);
-            next = current->nextAgent;
-            free(current);
-            current = next;
+void removeCastle(Agent *castle, Agent *conqueror) {
+    if (castle->type != CASTLE) {
+        return;
+    }
+    if (castle->prevAgent != NULL) {
+        castle->prevAgent->nextAgent = castle->nextNeighbor;
+        if (castle->nextNeighbor != NULL) {
+            castle->nextNeighbor->prevAgent = castle->prevAgent;
         }
-        g_world.current->nextAgent = NULL;
+        castle->prevAgent = NULL;
+    }
+    if (castle->prevNeighbor != NULL) {
+        castle->prevNeighbor->nextNeighbor = castle->nextNeighbor;
+    }
+    if (castle->nextNeighbor != NULL) {
+        castle->nextNeighbor->prevNeighbor = castle->prevNeighbor;
+    }
+    Agent *current = castle;
+    Agent *next = NULL;
+    while (current != NULL) {
+        next = current->nextAgent;
+        if (current->type == VILLAGER) {
+            changeLoyaltyToCastle(getCastleLoyalty(conqueror), current);
+        } else {
+            removeAgent(current);
+        }
+        current = next;
     }
 }
 
@@ -259,7 +273,7 @@ void buildAgent(Agent *agent, char type) {
 void updateBuild(Agent *castle, Agent *agent) {
     if (agent->product != FREE) {
         agent->time--;
-        if (agent->time <= 0) {
+        if (agent->time < 0) {
             if (agent->product == CASTLE) {
                 Agent *newCastle = addCastle(g_world.current, agent->clan, agent->pos);
                 changeLoyaltyToCastle(newCastle, agent);
@@ -468,53 +482,75 @@ void loadAgentFromData(char **data, int i) {
     }
 }
 
-Agent *searchPreviousAgentLinkToCastle(Agent *castle, Agent *agent) {
-    Agent *current = castle;
-    Agent *next = castle->nextAgent;
-    while (next != NULL && next != agent) {
-        current = next;
-        next = next->nextAgent;
+Agent *getAgentListTail(AList aList) {
+    if (aList == NULL)
+        return NULL;
+    Agent *current = aList;
+    while (current->nextAgent != NULL) {
+        current = current->nextAgent;
     }
-    return next == agent ? current : NULL;
+    return current;
 }
 
-Agent *searchPreviousAgent(Agent *agent) {
-    Agent *castle = g_world.current->nextAgent;
-    Agent *current = NULL;
-    while (castle != NULL && current == NULL) {
-        current = searchPreviousAgentLinkToCastle(castle, agent);
-        castle = castle->nextNeighbor;
+Agent *getCastleListTail(AList aList) {
+    if (aList == NULL || aList->nextAgent == NULL)
+        return aList;
+    Agent *current = aList->nextAgent; // First castle
+    while (current->nextNeighbor != NULL) {
+        current = current->nextNeighbor;
     }
     return current;
 }
 
 void changeLoyaltyToCastle(Agent *castle, Agent *agent) {
+    // Change loyalty color
+    agent->clan = castle->clan;
+
     // Remove agent from the global list
-    Agent *prev = searchPreviousAgent(agent);
-    prev->nextAgent = agent->nextAgent;
+    if (agent->prevAgent != NULL) {
+        agent->prevAgent->nextAgent = agent->nextAgent;
+    }
+    if (agent->nextAgent != NULL) {
+        agent->nextAgent->prevAgent = agent->prevAgent;
+    }
     agent->nextAgent = NULL;
 
     // Get the last agent from a specific castle list and add agent at the end
-    prev = searchPreviousAgentLinkToCastle(castle, NULL);
-    prev->nextAgent = agent;
+    Agent *tail = getAgentListTail(castle);
+    tail->nextAgent = agent;
+    agent->prevAgent = tail;
 }
 
-void battle(Agent *agent, Vector2 pos) {
+Agent *getCastleLoyalty(Agent *agent) {
+    Agent *current = agent;
+    while (current != NULL && current->type != CASTLE) {
+        current = current->prevAgent;
+    }
+    return current;
+}
+
+void battle(Agent *conqueror, Vector2 pos) {
     Cell cell = g_world.board[pos.y][pos.x];
     if (cell.inhabitants != NULL) {
-        int result = getAgentCost(agent->type) * get_random_integer(0, 100);
+        int result = getAgentCost(conqueror->type) * get_random_integer(0, 100);
         result -= getAgentCost(cell.inhabitants->type) * get_random_integer(0, 100);
         if (result >= 0 || cell.inhabitants->type == VILLAGER) {
             removeAgent(cell.inhabitants);
-            agent->pos = pos;
-            addAgentOnBoard(agent);
+            conqueror->pos = pos;
+            addAgentOnBoard(conqueror);
         }
         if (result <= 0 && cell.inhabitants->type != VILLAGER) {
-            removeAgent(agent);
-            agent = NULL;
+            removeAgent(conqueror);
+            conqueror = NULL;
         }
     }
-    if (cell.castle != NULL && agent != NULL) {
-        removeCastle(cell.castle); //TODO: change loyalty villager to castle's agent
+    if (cell.castle != NULL && conqueror != NULL) {
+        removeCastle(cell.castle, conqueror);
     }
+}
+
+bool isAgentFreed(Agent *agent) {
+    return (agent->clan != RED && agent->clan != BLUE)
+           || (agent->type != CASTLE && agent->type != BARON
+           && agent->type != WARRIOR && agent->type != VILLAGER);
 }

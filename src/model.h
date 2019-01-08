@@ -10,8 +10,8 @@
 
 /* CONSTANTS */
 
-#define COLS 8
-#define ROWS 6
+#define COLS 3
+#define ROWS 3
 
 #define RED 'R'
 #define BLUE 'B'
@@ -25,7 +25,7 @@
 #define TIME_VILLAGER 2
 #define TIME_WARRIOR 4
 #define TIME_BARON 6
-#define TIME_CASTLE 1
+#define TIME_CASTLE 0
 
 #define COST_VILLAGER 1
 #define COST_WARRIOR 5
@@ -98,8 +98,8 @@ Agent *addCastle(AList aList, char clan, Vector2 pos);
 // Remove an agent from list and board
 void removeAgent(Agent *agent);
 
-// Remove castle and all agents that belong to him
-void removeCastle(Agent *agent);
+// Remove castle and all agents that belong to him and change loyalty to another castle (conqueror)
+void removeCastle(Agent *agent, Agent *conqueror);
 
 // Add an agent to the board
 void addAgentOnBoard(Agent *agent);
@@ -203,16 +203,22 @@ void loadBoardFromData(char *data);
 // Initialize agents from data
 void loadAgentFromData(char **data, int i);
 
-// Search previous agent link to castle
-Agent *searchPreviousAgentLinkToCastle(Agent *castle, Agent *agent);
+// Get the last agent of the list of agent
+Agent *getAgentListTail(AList aList);
 
-// Search previous agent from list
-Agent *searchPreviousAgent(Agent *agent);
+// Get the last castle of the list of castle
+Agent *getCastleListTail(AList aList);
 
 // Change loyalty to another castle
 void changeLoyaltyToCastle(Agent *castle, Agent *agent);
 
+// get the loyalty castle of an agent
+Agent *getCastleLoyalty(Agent *agent);
+
 // Handle battle
-void battle(Agent *agent, Vector2 pos);
+void battle(Agent *conqueror, Vector2 pos);
+
+// Check if an agent was freed
+bool isAgentFreed(Agent *agent);
 
 #endif //GAME_OF_STOOLS_MODEL_H
